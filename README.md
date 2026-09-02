@@ -36,7 +36,8 @@ Save, *edited* where you have changed bytes here and not applied them, *1/2* for
 section (the game combines repeats; the inspector says how), *size* where the length is
 not what the game reads, *cut* where the file ended early. The buttons underneath add,
 remove, rename and reorder sections and export or import one section's bytes; the top
-bar exports or imports the whole `scenario.chk`.
+bar exports or imports the whole `scenario.chk`. Removing a section asks first: it rewrites
+the file and clears the editor's undo history with it.
 
 **Bytes** in the middle is the hex view: offset, sixteen bytes, their text. Colours follow
 the fields of the layout and alternate from record to record; the strip above is the whole
@@ -45,6 +46,9 @@ put the cursor there, drag to select.
 
 - Type hex digits in the byte column or characters in the text column to overwrite.
   `Tab` switches columns.
+- In a section of records the editor draws — `UNIT`, `THG2`, `MRGN` — **Show on map**
+  scrolls the map to the record under the cursor and selects it, so the bytes can be
+  checked against the thing itself.
 - **Insert mode** (the tick, or `Insert`) makes typing and pasting insert bytes instead,
   and `Delete` / `Backspace` remove them. In overwrite mode they zero the byte.
 - `Ctrl+C` copies the selection as hex (as text from the text column); `Ctrl+V` pastes

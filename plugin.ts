@@ -32,8 +32,9 @@ export default function activate(api: PluginApi) {
     explorer = new Explorer(api);
     explorer.open();
   };
-  api.menu.add("Tools", { label: "Section Explorer…", shortcut: "Ctrl+Shift+H", enabled: () => api.document.isOpen(), run: open });
-  api.hotkeys.add("Ctrl+Shift+H", open);
+  api.commands.register({ id: "open", title: "Section Explorer…", enabled: () => api.document.isOpen(), run: open });
+  api.menu.add("Tools", { label: "Section Explorer…", shortcut: "Ctrl+Shift+H", enabled: () => api.document.isOpen(), command: "open" });
+  api.hotkeys.add("Ctrl+Shift+H", { command: "open" });
   return () => { explorer?.close(); };
 }
 
@@ -316,7 +317,7 @@ class Explorer {
     const btn = (label: string, title: string, run: () => void, enabled = true) => h("button", { className: "sx-btn small", title, disabled: !enabled, onclick: run }, label);
     this.listFoot.append(
       btn("Add…", "Insert a new section", () => this.addForm()),
-      btn("Remove", "Remove this occurrence from the file", () => this.structural(() => this.api.document.sections.remove(this.selected), "Removed the section."), has),
+      btn("Remove", "Remove this occurrence from the file", () => { void this.confirmRemove(); }, has),
       btn("Rename…", "Change the four-character name", () => this.renameForm(this.selected), has),
       btn("↑", "Move up", () => this.structural(() => this.api.document.sections.move(this.selected, this.selected - 1), "Moved.", -1), has && this.selected > 0),
       btn("↓", "Move down", () => this.structural(() => this.api.document.sections.move(this.selected, this.selected + 1), "Moved.", 1), has && this.selected < this.infos.length - 1),
@@ -344,6 +345,9 @@ class Explorer {
     });
   }
 
+  /** Sections whose records are things on the map, and what `view.goTo` calls them. */
+  private static readonly GO_TO: Record<string, "unit" | "sprite" | "location"> = { "UNIT": "unit", "THG2": "sprite", "MRGN": "location" };
+
   private renderHexHead() {
     clear(this.hexHead);
     const s = this.infos[this.selected];
@@ -358,6 +362,21 @@ class Explorer {
         h("button", { className: "sx-btn small", title: "Append a blank record at the end", onclick: () => { const b = this.buffer(); if (!b) return; const where = b.length; b.insert(where, blankRecord(s.name)!); this.hex.setCursor(where); } }, "Append"),
         h("button", { className: "sx-btn small", title: "Remove the record under the cursor", onclick: () => { const b = this.buffer(); if (!b || b.length < stride) return; const where = at(); b.remove(where, stride); this.hex.setCursor(Math.min(where, Math.max(0, b.length - 1))); this.status(`Removed the record at ${hex(where)}.`); } }, "Delete record"),
       );
+      // A record of something the map draws: take the view to it, so a row of bytes can be
+      // checked against the thing itself. Only what is actually in the document — an
+      // unapplied record has no counterpart on the map yet.
+      const kind = Explorer.GO_TO[s.name];
+      if (kind) {
+        const index = Math.floor(this.hex.cursor / stride);
+        this.hexHead.append(h("button", {
+          className: "sx-btn small",
+          title: `Scroll the map to ${kind} ${index} and select it`,
+          onclick: () => {
+            this.api.view.goTo({ kind, index });
+            this.status(`Went to ${kind} ${index}.`);
+          },
+        }, "Show on map"));
+      }
     } else {
       const expected = s.spec?.size ?? expectedSize(s.name, this.ctx());
       if (expected !== null && expected !== buf.length) {
@@ -412,6 +431,23 @@ class Explorer {
     this.reload("structure");
     this.status(`Applied ${changed.length} section${changed.length === 1 ? "" : "s"}.${warnings.length ? ` The parser said: ${warnings.join(" ")}` : ""}`);
     return changed.length;
+  }
+
+  /**
+   * Removing a section rewrites the file and drops the editor's undo history with it, so
+   * unlike every other edit here it cannot be taken back. Ask, and say what the game does
+   * without the section.
+   */
+  private async confirmRemove() {
+    const s = this.infos[this.selected];
+    if (!s) return;
+    const modelled = s.spec?.modelled ? "The editor models this section: removing it changes what the map is." : "";
+    const ok = await this.api.ui.confirm(
+      `Remove ${s.name} (${fmt(s.size)} bytes) from the file?\n\n${modelled}\n\nThis rewrites the map and clears the undo history — there is no taking it back.`.replace(/\n{3,}/g, "\n\n"),
+      { title: `Remove ${s.name}`, confirmLabel: "Remove", danger: true },
+    );
+    if (!ok) { this.status("Kept the section."); return; }
+    this.structural(() => this.api.document.sections.remove(this.selected), "Removed the section.");
   }
 
   /** A structural edit: pending changes go in first, then the operation, then everything is read again. */
