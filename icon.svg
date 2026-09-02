@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Section Explorer">
+  <!-- A column of bytes with one row picked out: the section list and the hex view in one
+       mark. Gold, the editor's other accent, so it is not mistaken for the network plugin's
+       teal; three bars and a frame, legible at 14 px. -->
+  <rect x="2.5" y="3" width="19" height="18" rx="2" fill="none" stroke="#e6b95c" stroke-width="1.8"/>
+  <rect x="5.5" y="6.5" width="4" height="2.4" rx=".6" fill="#e6b95c"/>
+  <rect x="11" y="6.5" width="7.5" height="2.4" rx=".6" fill="#a9853c"/>
+  <rect x="5.5" y="10.8" width="13" height="2.4" rx=".6" fill="#4fd1c5"/>
+  <rect x="5.5" y="15.1" width="4" height="2.4" rx=".6" fill="#e6b95c"/>
+  <rect x="11" y="15.1" width="5" height="2.4" rx=".6" fill="#a9853c"/>
+</svg>

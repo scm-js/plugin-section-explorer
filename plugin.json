@@ -1,0 +1,11 @@
+{
+  "name": "Section Explorer",
+  "id": "section-explorer",
+  "version": "1.0.0",
+  "description": "A hex editor that knows the map file. Every section of the scenario, its bytes, and what each byte is: records, fields, flags, and the names behind the numbers. Edit at the byte or at the field.",
+  "author": "Jeany",
+  "homepage": "https://github.com/scm-js/plugin-section-explorer",
+  "entry": "plugin.ts",
+  "icon": "icon.svg",
+  "api": 1
+}
