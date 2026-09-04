@@ -15,5 +15,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["plugin.ts", "buffer.ts", "layout.ts", "layouts.ts", "hexview.ts", "inspector.ts", "dom.ts", "tests", "plugin-api"]
+  "include": ["plugin.ts", "buffer.ts", "layout.ts", "layouts.ts", "hexview.ts", "inspector.ts", "dom.ts", "tests"]
 }

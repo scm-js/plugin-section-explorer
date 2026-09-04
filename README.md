@@ -90,11 +90,12 @@ plain bytes and edited the same way.
 | `hexview.ts` | the hex view |
 | `inspector.ts` | the inspector: header, find, field editor, data readings, structure tree |
 | `dom.ts` | the element builder and the stylesheet |
-| `plugin-api/` | the editor's emitted type declarations, vendored so this repository type-checks alone |
+| `dist/plugin.js` | the bundle the editor loads; `npm run build` writes it, CI commits it |
 | `tests/` | vitest over `buffer.ts` and `layouts.ts` |
 
-`plugin-api/` is generated in the editor's repository by `npm run build:plugin-types`; refresh it
-from there when the plugin API moves. The plugin uses `api.document.sections` (the file's
+Types come from [`@scm-js/plugin-api`](https://github.com/scm-js/plugin-api), a devDependency
+generated from the editor's own `src/plugins/api.ts`; `npm update @scm-js/plugin-api` takes the
+newest contract. The plugin uses `api.document.sections` (the file's
 sections as bytes, and raw edits to them) and `api.names` (the names behind the numbers).
 
 ## Development
@@ -105,9 +106,11 @@ npm run typecheck
 npm test
 ```
 
-The editor loads plugins straight from source, so there is no build step. To try local
-changes, serve this directory with CORS enabled (`npx serve --cors .`) and add
-`http://localhost:3000/` in Manage Plugins, then use **Reload** after each edit.
+`dist/plugin.js` is what the editor loads (`build` in the manifest): `npm run build` writes
+it with esbuild, and CI commits it on every push to `main` and checks at a tag that it is
+what the source builds to. Run `npm run dev` while you work so the bundle follows your
+edits. To try local changes, serve this directory with CORS enabled (`npx serve --cors .`)
+and add `http://localhost:3000/` in Manage Plugins, then use **Reload** after each edit.
 
 A plugin runs with the editor's own privileges. There is no sandbox.
 

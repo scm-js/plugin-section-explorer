@@ -13,10 +13,10 @@
  * `buffer.ts` is the edit buffer with its own undo, `layout.ts` the node model and
  * `layouts.ts` the sections' layouts (both pure, with tests); `hexview.ts` and
  * `inspector.ts` are the two big panes; this file is the dialog and the glue.
- * `plugin-api/` is the editor's emitted type declarations, vendored so the repository
- * type-checks alone; the host erases the type-only import.
+ * `@scm-js/plugin-api` is the editor's type declarations, a devDependency generated from
+ * its own `src/plugins/api.ts`; the host erases the type-only import.
  */
-import type { DialogHandle, PluginApi, SectionInfo } from "./plugin-api/plugins/api";
+import type { DialogHandle, PluginApi, SectionInfo } from "@scm-js/plugin-api";
 import { EditBuffer } from "./buffer";
 import { clear, h, STYLE } from "./dom";
 import { HexView, type Range } from "./hexview";
