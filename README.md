@@ -1,6 +1,6 @@
 # Section Explorer
 
-A plugin for [scmJS](https://github.com/jeany55/scm-js), the browser-based StarCraft 1 /
+A plugin for [scmJS](https://github.com/scm-js/scm-js), the browser-based StarCraft 1 /
 Brood War map editor. It is a hex editor that knows the map file.
 
 A scenario is a list of sections — `DIM `, `MTXM`, `UNIT`, `TRIG` and forty-odd others —
@@ -114,7 +114,7 @@ and add `http://localhost:3000/` in Manage Plugins, then use **Reload** after ea
 
 A plugin runs with the editor's own privileges. There is no sandbox.
 
-See [`docs/plugins.md`](https://github.com/jeany55/scm-js/blob/main/docs/plugins.md) in the editor
+See [`docs/plugins.md`](https://github.com/scm-js/scm-js/blob/main/docs/plugins.md) in the editor
 for the API tour; this plugin is the worked example for `api.document.sections` and `api.names`.
 
 ## Licence
