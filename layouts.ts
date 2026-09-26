@@ -13,6 +13,7 @@ import {
   array, chars, i32, instantiate, leaf, sequence, sizeOf, struct, u16, u32, u8,
   type Ctx, type Env, type Node, type Schema, type Semantic, type Siblings,
 } from "./layout";
+import { msg, t } from "./i18n";
 
 /* ── Semantics ──────────────────────────────────────────── */
 
@@ -186,54 +187,54 @@ const TYPE_LOOKUP = (table: Record<number, Arg[]>, name: (t: number, ctx: Ctx) =
 /* ── Record schemas ─────────────────────────────────────── */
 
 export const UNIT_RECORD = struct("Unit", [
-  u32("serial", HEX, "Unique per unit within the map; Nydus and add-on links refer to it."),
-  u16("x", PX, "Centre, in map pixels."), u16("y", PX, "Centre, in map pixels."),
-  u16("unitId", UNIT, "units.dat id."),
-  u16("relationType", flags(UNIT_RELATION_BITS), "How relatedSerial is linked."),
-  u16("validProperties", flags(UNIT_VALID_BITS), "Which special properties the game may read for this unit."),
-  u16("validStates", flags(UNIT_USED_BITS), "Which of the fields below are set."),
+  u32("serial", HEX, msg("Unique per unit within the map; Nydus and add-on links refer to it.")),
+  u16("x", PX, msg("Centre, in map pixels.")), u16("y", PX, msg("Centre, in map pixels.")),
+  u16("unitId", UNIT, msg("units.dat id.")),
+  u16("relationType", flags(UNIT_RELATION_BITS), msg("How relatedSerial is linked.")),
+  u16("validProperties", flags(UNIT_VALID_BITS), msg("Which special properties the game may read for this unit.")),
+  u16("validStates", flags(UNIT_USED_BITS), msg("Which of the fields below are set.")),
   u8("owner", PLAYER), u8("hitPoints", PERCENT), u8("shields", PERCENT), u8("energy", PERCENT),
-  u32("resources", NUM, "Minerals or gas held by a resource unit."), u16("hangar", NUM, "Interceptors or Scarabs."),
-  u16("stateFlags", flags(UNIT_STATE_BITS)), u32("unused", HEX), u32("relatedSerial", HEX, "The unit this one is linked to (a Nydus exit, an add-on's building)."),
+  u32("resources", NUM, msg("Minerals or gas held by a resource unit.")), u16("hangar", NUM, msg("Interceptors or Scarabs.")),
+  u16("stateFlags", flags(UNIT_STATE_BITS)), u32("unused", HEX), u32("relatedSerial", HEX, msg("The unit this one is linked to (a Nydus exit, an add-on's building).")),
 ], { summary: (r, ctx) => `${ctx.names.unit(r("unitId"))} — ${ctx.names.player(r("owner"))} at (${r("x")}, ${r("y")})` });
 
 export const SPRITE_RECORD = struct("Sprite", [
-  u16("spriteId", { edit: "number", describe: (v, ctx, s) => (s("flags") & 0x1000 ? `sprites.dat #${v}` : `unit: ${ctx.names.unit(v)}`) }, "A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps)."),
+  u16("spriteId", { edit: "number", describe: (v, ctx, s) => (s("flags") & 0x1000 ? `sprites.dat #${v}` : `unit: ${ctx.names.unit(v)}`) }, msg("A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps).")),
   u16("x", PX), u16("y", PX), u8("owner", PLAYER), u8("unused", HEX), u16("flags", flags(SPRITE_FLAG_BITS)),
 ], { summary: (r, ctx) => `${r("flags") & 0x1000 ? `sprite #${r("spriteId")}` : ctx.names.unit(r("spriteId"))} at (${r("x")}, ${r("y")})` });
 
 export const DOODAD_RECORD = struct("Doodad", [
-  u16("doodadId", NUM, "Index into the tileset's dddata.bin."), u16("x", PX, "Centre of the footprint."), u16("y", PX), u8("owner", PLAYER), u8("disabled", BOOL),
+  u16("doodadId", NUM, msg("Index into the tileset's dddata.bin.")), u16("x", PX, msg("Centre of the footprint.")), u16("y", PX), u8("owner", PLAYER), u8("disabled", BOOL),
 ], { summary: (r) => `doodad #${r("doodadId")} at (${r("x")}, ${r("y")})` });
 
 export const LOCATION_RECORD = struct("Location", [
   i32("left", PX), i32("top", PX), i32("right", PX), i32("bottom", PX),
-  u16("nameIndex", STRING), u16("elevationFlags", flags(ELEVATION_BITS), "A set bit excludes that elevation; 0 is everywhere."),
+  u16("nameIndex", STRING), u16("elevationFlags", flags(ELEVATION_BITS), msg("A set bit excludes that elevation; 0 is everywhere.")),
 ], { summary: (r, ctx) => `${r("nameIndex") ? quote(ctx.names.string(r("nameIndex")), 24) : "(unnamed)"} — (${r("left")}, ${r("top")})–(${r("right")}, ${r("bottom")})` });
 
 const CONDITION_RECORD = struct("Condition", [
   u32("location", LOCATION1), u32("player", PLAYER_GROUP), u32("amount", NUM), u16("unitId", UNIT),
   u8("comparison", COMPARISON), u8("type", CONDITION_TYPE),
-  u8("resource", perType(CONDITION_ARGS, ["cresource", "cscore", "cswitch"], "unused for this type"), "Resource, score type or switch number, per type."),
-  u8("flags", flags(CONDITION_FLAG_BITS)), u16("mask", HEX, "EUD mask; 0 in ordinary maps."),
+  u8("resource", perType(CONDITION_ARGS, ["cresource", "cscore", "cswitch"], "unused for this type"), msg("Resource, score type or switch number, per type.")),
+  u8("flags", flags(CONDITION_FLAG_BITS)), u16("mask", HEX, msg("EUD mask; 0 in ordinary maps.")),
 ], { summary: (r, ctx) => TYPE_LOOKUP(CONDITION_ARGS, (t, c) => c.names.condition(t))(r, ctx) });
 
 const actionRecord = (briefing: boolean) => struct("Action", [
   u32("location", LOCATION1), u32("text", STRING), u32("wav", STRING), u32("time", MS),
   u32("player", PLAYER_GROUP),
-  u32("target", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["player2", "location2", "amount", "percent", "switch", "aiScript", "cuwp", "slot"], "unused for this type"), "Second player, destination location, amount, switch, AI script or properties slot, per type."),
-  u16("unitId", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["unit", "resource", "score", "alliance"], "unused for this type"), "Unit id, resource, score type or alliance status, per type."),
+  u32("target", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["player2", "location2", "amount", "percent", "switch", "aiScript", "cuwp", "slot"], "unused for this type"), msg("Second player, destination location, amount, switch, AI script or properties slot, per type.")),
+  u16("unitId", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["unit", "resource", "score", "alliance"], "unused for this type"), msg("Unit id, resource, score type or alliance status, per type.")),
   u8("type", briefing ? BRIEFING_TYPE : ACTION_TYPE),
-  u8("modifier", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["count", "modifier", "switchAction", "unitState", "order"], "unused for this type"), "Unit count (0 = all), set/add/subtract, switch action, state or order, per type."),
-  u8("flags", flags(ACTION_FLAG_BITS)), u8("padding", HEX), u16("mask", HEX, "EUD mask; 0 in ordinary maps."),
+  u8("modifier", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["count", "modifier", "switchAction", "unitState", "order"], "unused for this type"), msg("Unit count (0 = all), set/add/subtract, switch action, state or order, per type.")),
+  u8("flags", flags(ACTION_FLAG_BITS)), u8("padding", HEX), u16("mask", HEX, msg("EUD mask; 0 in ordinary maps.")),
 ], { summary: (r, ctx) => TYPE_LOOKUP(briefing ? BRIEFING_ARGS : ACTION_ARGS, (t, c) => c.names.action(t, briefing))(r, ctx) });
 
 const triggerRecord = (briefing: boolean) => struct(briefing ? "Briefing" : "Trigger", [
   array("conditions", CONDITION_RECORD, 16, { colors: "cycle", item: (i) => `condition ${i}` }),
   array("actions", actionRecord(briefing), 64, { colors: "cycle", item: (i) => `action ${i}` }),
   u32("flags", flags(TRIGGER_FLAG_BITS)),
-  array("players", u8("runs for", BOOL), 27, { item: (i, ctx) => ctx.names.playerGroup(i), doc: "One byte per player group; non-zero means the trigger runs for that group." }),
-  u8("currentAction", NUM, "The game's bookkeeping; StarEdit writes 0."),
+  array("players", u8("runs for", BOOL), 27, { item: (i, ctx) => ctx.names.playerGroup(i), doc: msg("One byte per player group; non-zero means the trigger runs for that group.") }),
+  u8("currentAction", NUM, msg("The game's bookkeeping; StarEdit writes 0.")),
 ], {
   summary: (_r, ctx, data, start) => {
     const conditions: string[] = [];
@@ -255,47 +256,47 @@ export const CUWP_RECORD = struct("Unit properties", [
 /* ── Whole sections ─────────────────────────────────────── */
 
 export const SECTION_DOCS: Record<string, string> = {
-  "TYPE": "The map type: RAWS for an original or hybrid map, RAWB for Brood War.",
-  "VER ": "The file format revision. Decides which settings sections the game reads.",
-  "IVER": "The StarEdit version that wrote the file (obsolete; 9 or 10). Not required.",
-  "IVE2": "The StarEdit version that wrote the file (11 for every release version).",
-  "VCOD": "The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused.",
-  "IOWN": "StarEdit's copy of the player controllers. The game reads OWNR.",
-  "OWNR": "Who controls each of the twelve player slots: human, computer, rescuable, neutral, …",
-  "ERA ": "The tileset, as a 16-bit value the game masks to its low three bits.",
-  "DIM ": "Map width and height in tiles.",
-  "SIDE": "The race of each of the twelve player slots.",
-  "MTXM": "The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4).",
-  "PUNI": "Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default.",
-  "UPGR": "Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them.",
-  "PTEC": "Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them.",
-  "UNIT": "Placed units, 36 bytes each, in the order they were placed.",
-  "ISOM": "The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it.",
-  "TILE": "StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it.",
-  "DD2 ": "Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2.",
-  "THG2": "Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays.",
-  "MASK": "Fog of war: one byte per cell, one bit per player 1–8, set where that player starts unexplored. A map without MASK is fully fogged.",
-  "STR ": "The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string.",
-  "STRx": "The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text.",
-  "UPRP": "The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number.",
-  "UPUS": "Which of the 64 CUWP slots are in use (StarEdit's bookkeeping).",
-  "MRGN": "Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere.",
-  "TRIG": "Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte.",
-  "MBRF": "Mission briefings: the same record as TRIG with briefing action types.",
-  "SPRP": "The string indices of the scenario's name and description.",
-  "FORC": "Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags.",
-  "WAV ": "The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\…). Play WAV actions store the string index itself.",
-  "UNIS": "Unit settings, original layout: per unit type a use-default byte, hit points (×256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values.",
-  "UPGS": "Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors.",
-  "TECS": "Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs.",
-  "SWNM": "Switch names: 256 string indices, 0 for an unnamed switch.",
-  "COLR": "The colour of each of the eight playable slots, as an index into the game's colour table.",
-  "PUPx": "Upgrade restrictions, Brood War layout (61 upgrades).",
-  "PTEx": "Technology restrictions, Brood War layout (44 technologies).",
-  "UNIx": "Unit settings, Brood War layout: as UNIS with 130 weapons.",
-  "UPGx": "Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column).",
-  "TECx": "Technology settings, Brood War layout (44 technologies).",
-  "CRGB": "Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR.",
+  "TYPE": msg("The map type: RAWS for an original or hybrid map, RAWB for Brood War."),
+  "VER ": msg("The file format revision. Decides which settings sections the game reads."),
+  "IVER": msg("The StarEdit version that wrote the file (obsolete; 9 or 10). Not required."),
+  "IVE2": msg("The StarEdit version that wrote the file (11 for every release version)."),
+  "VCOD": msg("The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused."),
+  "IOWN": msg("StarEdit's copy of the player controllers. The game reads OWNR."),
+  "OWNR": msg("Who controls each of the twelve player slots: human, computer, rescuable, neutral, …"),
+  "ERA ": msg("The tileset, as a 16-bit value the game masks to its low three bits."),
+  "DIM ": msg("Map width and height in tiles."),
+  "SIDE": msg("The race of each of the twelve player slots."),
+  "MTXM": msg("The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4)."),
+  "PUNI": msg("Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default."),
+  "UPGR": msg("Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them."),
+  "PTEC": msg("Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them."),
+  "UNIT": msg("Placed units, 36 bytes each, in the order they were placed."),
+  "ISOM": msg("The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it."),
+  "TILE": msg("StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it."),
+  "DD2 ": msg("Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2."),
+  "THG2": msg("Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays."),
+  "MASK": msg("Fog of war: one byte per cell, one bit per player 1–8, set where that player starts unexplored. A map without MASK is fully fogged."),
+  "STR ": msg("The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string."),
+  "STRx": msg("The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text."),
+  "UPRP": msg("The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number."),
+  "UPUS": msg("Which of the 64 CUWP slots are in use (StarEdit's bookkeeping)."),
+  "MRGN": msg("Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere."),
+  "TRIG": msg("Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte."),
+  "MBRF": msg("Mission briefings: the same record as TRIG with briefing action types."),
+  "SPRP": msg("The string indices of the scenario's name and description."),
+  "FORC": msg("Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags."),
+  "WAV ": msg("The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\…). Play WAV actions store the string index itself."),
+  "UNIS": msg("Unit settings, original layout: per unit type a use-default byte, hit points (×256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values."),
+  "UPGS": msg("Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors."),
+  "TECS": msg("Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs."),
+  "SWNM": msg("Switch names: 256 string indices, 0 for an unnamed switch."),
+  "COLR": msg("The colour of each of the eight playable slots, as an index into the game's colour table."),
+  "PUPx": msg("Upgrade restrictions, Brood War layout (61 upgrades)."),
+  "PTEx": msg("Technology restrictions, Brood War layout (44 technologies)."),
+  "UNIx": msg("Unit settings, Brood War layout: as UNIS with 130 weapons."),
+  "UPGx": msg("Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column)."),
+  "TECx": msg("Technology settings, Brood War layout (44 technologies)."),
+  "CRGB": msg("Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR."),
 };
 
 const UNIT_TYPES = 228;
@@ -310,14 +311,14 @@ const cell = (i: number, ctx: Ctx) => `(${ctx.width ? i % ctx.width : i}, ${ctx.
 
 function unitSettings(weapons: number): Schema {
   return struct("Unit settings", [
-    perUnit(u8("useDefault", BOOL), "useDefault", "1 = the game uses units.dat / weapons.dat for this type."),
-    perUnit(u32("hitPoints", FIXED256), "hitPoints", "Hit points × 256."),
+    perUnit(u8("useDefault", BOOL), "useDefault", msg("1 = the game uses units.dat / weapons.dat for this type.")),
+    perUnit(u32("hitPoints", FIXED256), "hitPoints", msg("Hit points × 256.")),
     perUnit(u16("shields", NUM), "shields"),
     perUnit(u8("armor", NUM), "armor"),
-    perUnit(u16("buildTime", FRAMES), "buildTime", "Game frames."),
+    perUnit(u16("buildTime", FRAMES), "buildTime", msg("Game frames.")),
     perUnit(u16("minerals", NUM), "minerals"),
     perUnit(u16("gas", NUM), "gas"),
-    perUnit(u16("name", STRING), "name", "String index of a custom name, 0 for the default."),
+    perUnit(u16("name", STRING), "name", msg("String index of a custom name, 0 for the default.")),
     perWeapon(u16("damage", NUM), "weaponDamage", weapons),
     perWeapon(u16("bonus", NUM), "weaponBonus", weapons),
   ]);
@@ -326,7 +327,7 @@ function unitSettings(weapons: number): Schema {
 function upgradeSettings(n: number, pad: boolean): Schema {
   return struct("Upgrade settings", [
     perUpgrade(u8("useDefault", BOOL), "useDefault", n),
-    ...(pad ? [u8("pad", HEX, "Alignment byte.")] : []),
+    ...(pad ? [u8("pad", HEX, msg("Alignment byte."))] : []),
     perUpgrade(u16("mineralBase", NUM), "mineralBase", n), perUpgrade(u16("mineralFactor", NUM), "mineralFactor", n),
     perUpgrade(u16("gasBase", NUM), "gasBase", n), perUpgrade(u16("gasFactor", NUM), "gasFactor", n),
     perUpgrade(u16("timeBase", FRAMES), "timeBase", n), perUpgrade(u16("timeFactor", FRAMES), "timeFactor", n),
@@ -452,18 +453,18 @@ function stringTable(bytes: Uint8Array, env: Env, wide: boolean): Node {
     while (end < bytes.length && bytes[end] !== 0) end++;
     const indices = users.get(off)!;
     return leaf(`#${indices[0]}${indices.length > 1 ? ` (+${indices.length - 1})` : ""}`, off, Math.min(bytes.length, end + 1) - off, "chars", {
-      doc: `String index${indices.length > 1 ? "es" : ""} ${indices.join(", ")}, NUL-terminated.`,
+      doc: t("{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated.", { n: indices.length, list: indices.join(", ") }),
       semantic: { edit: "text" },
       color: blobs.indexOf(off) % 8,
     });
   });
-  const strings: Node = { label: "strings", start: blobs[0] ?? (listed + 1) * width, size: 0, type: "array", color: 0, band: 0, count: blobNodes.length, child: (i) => blobNodes[i], doc: "The text, in offset order. A blob shared by several indices is listed once." };
+  const strings: Node = { label: "strings", start: blobs[0] ?? (listed + 1) * width, size: 0, type: "array", color: 0, band: 0, count: blobNodes.length, child: (i) => blobNodes[i], doc: msg("The text, in offset order. A blob shared by several indices is listed once.") };
   const last = blobNodes[blobNodes.length - 1];
   strings.size = last ? last.start + last.size - strings.start : 0;
   const header = instantiate(struct("header", [wide ? u32("count", NUM) : u16("count", NUM)]), 0, env, 0, 0);
   const offsets = instantiate(array("offsets", wide ? u32("offset", HEX) : u16("offset", HEX), listed, {
     item: (i) => `#${i + 1}`, colors: "alternate",
-    doc: "Byte offset of each string from the start of the section; index 0 has no entry.",
+    doc: msg("Byte offset of each string from the start of the section; index 0 has no entry."),
   }), width, env, 1, 0);
   // The offsets' meaning is the string they point at.
   offsets.child = ((inner) => (i: number) => {
@@ -501,7 +502,7 @@ export function sectionLayout(name: string, bytes: Uint8Array, ctx: Ctx): Node |
   }
   root.doc = root.doc ?? SECTION_DOCS[name];
   if (root.size < bytes.length) {
-    const rest = leaf("trailing bytes", root.size, bytes.length - root.size, "bytes", { doc: "Bytes past the end of the layout. The game ignores what it does not read.", color: 7 });
+    const rest = leaf("trailing bytes", root.size, bytes.length - root.size, "bytes", { doc: msg("Bytes past the end of the layout. The game ignores what it does not read."), color: 7 });
     const seq = sequence(root.label, [root, rest], root.doc);
     return seq;
   }

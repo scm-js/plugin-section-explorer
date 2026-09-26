@@ -11,6 +11,7 @@
  * Nothing here knows a UNIT from a TRIG; `layouts.ts` has the sections. `Names` is the
  * slice of the editor's `api.names` the meanings need, so tests can pass a stub.
  */
+import { t } from "./i18n";
 
 export type Prim = "u8" | "i8" | "u16" | "i16" | "u32" | "i32" | "chars" | "bytes";
 
@@ -331,7 +332,7 @@ export function describe(leaf: Node, bytes: Uint8Array, ctx: Ctx, siblings: Sibl
     return { value: 0, text: JSON.stringify(text), meaning };
   }
   if (leaf.type === "bytes") {
-    return { value: 0, text: `${Math.min(leaf.size, Math.max(0, bytes.length - leaf.start))} bytes`, meaning: leaf.semantic?.describe?.(0, ctx, siblings) ?? "" };
+    return { value: 0, text: t("{n} bytes", { n: Math.min(leaf.size, Math.max(0, bytes.length - leaf.start)) }), meaning: leaf.semantic?.describe?.(0, ctx, siblings) ?? "" };
   }
   const value = readPrim(bytes, leaf.type as Prim, leaf.start, leaf.size);
   const text = leaf.semantic?.hex ? `0x${(value >>> 0).toString(16).toUpperCase().padStart(leaf.size * 2, "0")}` : String(value);

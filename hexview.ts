@@ -9,6 +9,7 @@
  */
 import { latin1, parseHex, toHex, type EditBuffer } from "./buffer";
 import { h, clear } from "./dom";
+import { t } from "./i18n";
 import { leafAt, leavesIn, type Node } from "./layout";
 
 export const BYTES_PER_ROW = 16;
@@ -54,9 +55,9 @@ export class HexView {
     this.spacer = h("div", { className: "sx-hexspacer" });
     this.rows = h("div", { className: "sx-hexrows" });
     this.spacer.append(this.rows);
-    this.empty = h("div", { className: "sx-hexempty", hidden: true }, "This section is empty. Insert a record or bytes from the inspector, or paste hex here.");
+    this.empty = h("div", { className: "sx-hexempty", hidden: true }, t("This section is empty. Insert a record or bytes from the inspector, or paste hex here."));
     this.scroll = h("div", { className: "sx-hexscroll", tabindex: 0 }, this.spacer, this.empty);
-    this.strip = h("canvas", { className: "sx-strip", height: 14, title: "The section's structure; click to jump" });
+    this.strip = h("canvas", { className: "sx-strip", height: 14, title: t("The section's structure; click to jump") });
     this.el = h("div", { className: "sx-hexpane" }, this.strip, this.scroll);
     this.scroll.addEventListener("scroll", () => this.schedule());
     this.scroll.addEventListener("mousedown", (e) => this.onMouseDown(e));

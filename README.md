@@ -90,8 +90,9 @@ plain bytes and edited the same way.
 | `hexview.ts` | the hex view |
 | `inspector.ts` | the inspector: header, find, field editor, data readings, structure tree |
 | `dom.ts` | the element builder and the stylesheet |
+| `i18n.ts`, `ko.ts` | the plugin's words in the editor's language: `t()` / `msg()` and the Korean catalogue |
 | `dist/plugin.js` | the bundle the editor loads; `npm run build` writes it, CI commits it |
-| `tests/` | vitest over `buffer.ts` and `layouts.ts` |
+| `tests/` | vitest over `buffer.ts` and `layouts.ts`, and a check that `ko.ts` has every string the plugin shows |
 
 Types come from [`@scm-js/plugin-api`](https://github.com/scm-js/plugin-api), a devDependency
 generated from the editor's own `src/plugins/api.ts`; `npm update @scm-js/plugin-api` takes the

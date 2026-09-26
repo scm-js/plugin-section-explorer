@@ -302,6 +302,54 @@ var STYLE = `
 .sx .sx-modal .sx-frow { grid-template-columns: 90px 1fr; }
 `;
 
+// i18n.ts
+var i18n = null;
+function bindLanguage(api) {
+  i18n = api.i18n;
+}
+var t = (text, params) => i18n ? i18n.t(text, params) : english(text, params);
+var translate = (text, params) => i18n ? i18n.t(text, params) : english(text, params);
+var msg = (text) => text;
+function english(text, params = {}) {
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== "{") {
+      out += text[i];
+      continue;
+    }
+    const end = closing(text, i);
+    const body = text.slice(i + 1, end);
+    i = end;
+    const m = /^(\w+)\s*,\s*(plural|select)\s*,([\s\S]*)$/.exec(body);
+    if (!m) {
+      const v = params[body.split("|")[0].trim()];
+      out += v === void 0 ? `{${body}}` : String(v);
+      continue;
+    }
+    const value = params[m[1]];
+    const branches = /* @__PURE__ */ new Map();
+    for (let rest = m[3]; rest.trim(); ) {
+      const k = /^\s*(=?\w+)\s*\{/.exec(rest);
+      if (!k) break;
+      const open = k[0].length - 1;
+      const close = closing(rest, open);
+      branches.set(k[1], rest.slice(open + 1, close));
+      rest = rest.slice(close + 1);
+    }
+    const pick = m[2] === "plural" ? branches.get(`=${value}`) ?? (value === 1 ? branches.get("one") : void 0) ?? branches.get("other") : branches.get(String(value)) ?? branches.get("other");
+    out += english((pick ?? "").replace(/#/g, String(value)), params);
+  }
+  return out;
+}
+function closing(s, open) {
+  let depth = 0;
+  for (let i = open; i < s.length; i++) {
+    if (s[i] === "{") depth++;
+    else if (s[i] === "}" && --depth === 0) return i;
+  }
+  return s.length;
+}
+
 // layout.ts
 var sizes = /* @__PURE__ */ new WeakMap();
 function sizeOf(s) {
@@ -500,7 +548,7 @@ function describe(leaf2, bytes, ctx, siblings) {
     return { value: 0, text: JSON.stringify(text2), meaning: meaning2 };
   }
   if (leaf2.type === "bytes") {
-    return { value: 0, text: `${Math.min(leaf2.size, Math.max(0, bytes.length - leaf2.start))} bytes`, meaning: leaf2.semantic?.describe?.(0, ctx, siblings) ?? "" };
+    return { value: 0, text: t("{n} bytes", { n: Math.min(leaf2.size, Math.max(0, bytes.length - leaf2.start)) }), meaning: leaf2.semantic?.describe?.(0, ctx, siblings) ?? "" };
   }
   const value = readPrim(bytes, leaf2.type, leaf2.start, leaf2.size);
   const text = leaf2.semantic?.hex ? `0x${(value >>> 0).toString(16).toUpperCase().padStart(leaf2.size * 2, "0")}` : String(value);
@@ -537,9 +585,9 @@ var HexView = class {
     this.spacer = h("div", { className: "sx-hexspacer" });
     this.rows = h("div", { className: "sx-hexrows" });
     this.spacer.append(this.rows);
-    this.empty = h("div", { className: "sx-hexempty", hidden: true }, "This section is empty. Insert a record or bytes from the inspector, or paste hex here.");
+    this.empty = h("div", { className: "sx-hexempty", hidden: true }, t("This section is empty. Insert a record or bytes from the inspector, or paste hex here."));
     this.scroll = h("div", { className: "sx-hexscroll", tabindex: 0 }, this.spacer, this.empty);
-    this.strip = h("canvas", { className: "sx-strip", height: 14, title: "The section's structure; click to jump" });
+    this.strip = h("canvas", { className: "sx-strip", height: 14, title: t("The section's structure; click to jump") });
     this.el = h("div", { className: "sx-hexpane" }, this.strip, this.scroll);
     this.scroll.addEventListener("scroll", () => this.schedule());
     this.scroll.addEventListener("mousedown", (e) => this.onMouseDown(e));
@@ -732,8 +780,8 @@ var HexView = class {
   }
   /* ── Mouse ────────────────────────────────────────────── */
   byteAt(e) {
-    const t = e.target;
-    const span = t?.closest?.(".sx-b[data-at]");
+    const t2 = e.target;
+    const span = t2?.closest?.(".sx-b[data-at]");
     if (!span) return null;
     return { at: Number(span.dataset.at), column: span.parentElement?.classList.contains("sx-as") ? "ascii" : "hex" };
   }
@@ -969,9 +1017,9 @@ var Inspector = class {
     this.host = host;
     this.doc = h("div", { className: "sx-doc" });
     this.hoverLine = h("div", { className: "sx-hint" });
-    this.findBox = h("input", { type: "text", placeholder: "find hex or text", spellcheck: false });
-    this.findMode = h("select", null, h("option", { value: "hex" }, "hex"), h("option", { value: "text" }, "text"), h("option", { value: "u16" }, "u16"), h("option", { value: "u32" }, "u32"));
-    this.gotoBox = h("input", { type: "text", placeholder: "go to 0x\u2026", spellcheck: false, style: "width: 78px; flex: none" });
+    this.findBox = h("input", { type: "text", placeholder: t("find hex or text"), spellcheck: false });
+    this.findMode = h("select", null, h("option", { value: "hex" }, t("hex")), h("option", { value: "text" }, t("text")), h("option", { value: "u16" }, "u16"), h("option", { value: "u32" }, "u32"));
+    this.gotoBox = h("input", { type: "text", placeholder: t("go to 0x\u2026"), spellcheck: false, style: "width: 78px; flex: none" });
     this.findBox.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -991,7 +1039,7 @@ var Inspector = class {
       { className: "sx-search" },
       this.findBox,
       this.findMode,
-      h("button", { className: "sx-btn small", title: "Find next (Enter); Shift+Enter finds the previous", onclick: () => this.find(1) }, "Find"),
+      h("button", { className: "sx-btn small", title: t("Find next (Enter); Shift+Enter finds the previous"), onclick: () => this.find(1) }, t("Find")),
       this.gotoBox
     );
     this.field = h("div", { className: "sx-field" });
@@ -1001,7 +1049,7 @@ var Inspector = class {
     this.el = h(
       "div",
       { className: "sx-pane sx-insp" },
-      h("div", { className: "sx-pane-head" }, h("b", null, "Inspector"), h("span", { className: "sx-dim sx-grow" }), this.hoverLine),
+      h("div", { className: "sx-pane-head" }, h("b", null, t("Inspector")), h("span", { className: "sx-dim sx-grow" }), this.hoverLine),
       this.doc,
       search,
       this.field,
@@ -1015,18 +1063,18 @@ var Inspector = class {
   setHeader(hd) {
     clear(this.doc);
     if (!hd) {
-      this.doc.append("Choose a section on the left.");
+      this.doc.append(t("Choose a section on the left."));
       this.expanded.clear();
       this.pages.clear();
       this.selectedKey = null;
       return;
     }
-    const sizeNote = hd.expected !== null && hd.expected !== hd.size ? h("span", { className: "sx-warn" }, ` \u2014 the game expects ${hd.expected.toLocaleString()} bytes`) : hd.recordSize !== null && hd.size % hd.recordSize !== 0 ? h("span", { className: "sx-warn" }, ` \u2014 not a whole number of ${hd.recordSize}-byte records`) : null;
+    const sizeNote = hd.expected !== null && hd.expected !== hd.size ? h("span", { className: "sx-warn" }, ` \u2014 ${t("the game expects {n} bytes", { n: hd.expected.toLocaleString() })}`) : hd.recordSize !== null && hd.size % hd.recordSize !== 0 ? h("span", { className: "sx-warn" }, ` \u2014 ${t("not a whole number of {n}-byte records", { n: hd.recordSize })}`) : null;
     this.doc.append(
       h("div", null, h("b", { className: "sx-mono" }, hd.name), " ", h("span", null, hd.what), h("span", { className: "sx-faint" }, ` \xB7 ${hd.mode}${hd.occurrence ? ` \xB7 ${hd.occurrence}` : ""}`)),
-      h("div", null, `${hd.size.toLocaleString()} bytes`, hd.recordSize !== null ? ` \u2014 ${Math.floor(hd.size / hd.recordSize).toLocaleString()} records of ${hd.recordSize}` : "", sizeNote ?? ""),
-      hd.doc ? h("div", { style: "margin-top:3px" }, hd.doc) : h("div", { style: "margin-top:3px" }, "The editor has no layout for this section; the bytes are shown as they are."),
-      hd.modelled ? h("div", { className: "sx-faint", style: "margin-top:3px" }, hd.dirty ? "The editor has unsaved changes here; what you see is what Save would write." : "The editor decodes this section; an applied edit is read back into the map.") : h("div", { className: "sx-faint", style: "margin-top:3px" }, "The editor keeps this section as bytes and writes it back unchanged.")
+      h("div", null, t("{n} bytes", { n: hd.size.toLocaleString() }), hd.recordSize !== null ? ` \u2014 ${t("{count} records of {size}", { count: Math.floor(hd.size / hd.recordSize).toLocaleString(), size: hd.recordSize })}` : "", sizeNote ?? ""),
+      hd.doc ? h("div", { style: "margin-top:3px" }, hd.doc) : h("div", { style: "margin-top:3px" }, t("The editor has no layout for this section; the bytes are shown as they are.")),
+      hd.modelled ? h("div", { className: "sx-faint", style: "margin-top:3px" }, hd.dirty ? t("The editor has unsaved changes here; what you see is what Save would write.") : t("The editor decodes this section; an applied edit is read back into the map.")) : h("div", { className: "sx-faint", style: "margin-top:3px" }, t("The editor keeps this section as bytes and writes it back unchanged."))
     );
   }
   setHover(offset) {
@@ -1065,12 +1113,12 @@ var Inspector = class {
     const root = this.host.layout();
     if (!buf) return;
     if (buf.length === 0) {
-      this.field.append(h("div", { className: "sx-fdoc" }, "No bytes."));
+      this.field.append(h("div", { className: "sx-fdoc" }, t("No bytes.")));
       return;
     }
     const hit = root ? leafAt(root, this.cursor) : null;
     if (!hit) {
-      this.field.append(h("div", { className: "sx-crumb" }, h("b", null, `byte 0x${this.cursor.toString(16)}`)), h("div", { className: "sx-fdoc" }, root ? "Not part of the layout." : "Type hex digits in the byte column or characters in the text column to change it."));
+      this.field.append(h("div", { className: "sx-crumb" }, h("b", null, t("byte {offset}", { offset: `0x${this.cursor.toString(16)}` }))), h("div", { className: "sx-fdoc" }, root ? t("Not part of the layout.") : t("Type hex digits in the byte column or characters in the text column to change it.")));
       return;
     }
     const { leaf: leaf2, path } = hit;
@@ -1085,13 +1133,13 @@ var Inspector = class {
       "div",
       { className: "sx-fdoc" },
       h("span", { className: "sx-mono" }, `${leaf2.type}`),
-      ` at 0x${leaf2.start.toString(16)}`,
-      leaf2.size > 1 ? `, ${leaf2.size} bytes` : "",
-      leaf2.start + leaf2.size > buf.length ? h("span", { className: "sx-warn" }, " \u2014 runs past the end of the section") : "",
-      leaf2.doc ? h("div", null, leaf2.doc) : ""
+      ` ${t("at {offset}", { offset: `0x${leaf2.start.toString(16)}` })}`,
+      leaf2.size > 1 ? `, ${t("{n} bytes", { n: leaf2.size })}` : "",
+      leaf2.start + leaf2.size > buf.length ? h("span", { className: "sx-warn" }, ` \u2014 ${t("runs past the end of the section")}`) : "",
+      leaf2.doc ? h("div", null, translate(leaf2.doc)) : ""
     ));
     const sem = leaf2.semantic;
-    const value = h("div", { className: "sx-frow" }, h("label", null, "value"), h("div", { className: "sx-mono" }, d.text, d.meaning ? h("span", { className: "sx-dim" }, `  ${d.meaning}`) : ""));
+    const value = h("div", { className: "sx-frow" }, h("label", null, t("value")), h("div", { className: "sx-mono" }, d.text, d.meaning ? h("span", { className: "sx-dim" }, `  ${d.meaning}`) : ""));
     this.field.append(value);
     if (!sem || sem.edit === "none" || leaf2.type === "bytes") return;
     const commit = (bytes) => {
@@ -1111,7 +1159,7 @@ var Inspector = class {
         out.set(latin1(input.value).subarray(0, leaf2.size));
         commit(out);
       });
-      this.field.append(h("div", { className: "sx-frow" }, h("label", null, "text"), input));
+      this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("text")), input));
       return;
     }
     const prim2 = leaf2.type;
@@ -1125,11 +1173,11 @@ var Inspector = class {
         select.append(h("option", { value: o.value }, `${o.value} \u2014 ${o.label}`));
         if (o.value === d.value) present = true;
       }
-      if (!present) select.prepend(h("option", { value: d.value }, `${d.value} \u2014 (not in the list)`));
+      if (!present) select.prepend(h("option", { value: d.value }, `${d.value} \u2014 ${t("(not in the list)")}`));
       select.value = String(d.value);
       select.addEventListener("keydown", (e) => e.stopPropagation());
       select.addEventListener("change", () => write(Number(select.value)));
-      this.field.append(h("div", { className: "sx-frow" }, h("label", null, "choose"), select));
+      this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("choose")), select));
     }
     if (sem.edit === "flags" && sem.bits) {
       const box = h("div", { className: "sx-flagbox" });
@@ -1138,7 +1186,7 @@ var Inspector = class {
         cb.addEventListener("change", () => write(cb.checked ? d.value | b.bit : d.value & ~b.bit));
         box.append(h("label", null, cb, b.label));
       }
-      this.field.append(h("div", { className: "sx-frow" }, h("label", null, "bits"), box));
+      this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("bits")), box));
     }
     const num = h("input", { type: "text", value: sem.hex ? `0x${(d.value >>> 0).toString(16)}` : String(d.value), spellcheck: false });
     num.addEventListener("keydown", (e) => {
@@ -1153,7 +1201,7 @@ var Inspector = class {
       if (v !== null) write(v);
       else num.value = String(d.value);
     });
-    this.field.append(h("div", { className: "sx-frow" }, h("label", null, "number"), num));
+    this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("number")), num));
   }
   renderData() {
     clear(this.data);
@@ -1164,13 +1212,13 @@ var Inspector = class {
     const row = (k, v) => {
       this.data.append(h("span", { className: "k" }, k), h("span", { className: "v" }, v));
     };
-    row("offset", `${at} (0x${at.toString(16)})`);
+    row(t("offset"), `${at} (0x${at.toString(16)})`);
     row("u8 / i8", `${readPrim(b, "u8", at, 1)} / ${readPrim(b, "i8", at, 1)}`);
     if (at + 2 <= b.length) row("u16 / i16", `${readPrim(b, "u16", at, 2)} / ${readPrim(b, "i16", at, 2)}`);
     if (at + 4 <= b.length) row("u32 / i32", `${readPrim(b, "u32", at, 4)} / ${readPrim(b, "i32", at, 4)}`);
-    row("bits", b[at].toString(2).padStart(8, "0"));
-    row("char", b[at] >= 32 && b[at] < 127 ? `'${String.fromCharCode(b[at])}'` : b[at] === 0 ? "NUL" : `\\x${b[at].toString(16).padStart(2, "0")}`);
-    if (at + 4 <= b.length) row("chars", JSON.stringify(readChars(b, at, 4, false)));
+    row(t("bits"), b[at].toString(2).padStart(8, "0"));
+    row(t("char"), b[at] >= 32 && b[at] < 127 ? `'${String.fromCharCode(b[at])}'` : b[at] === 0 ? "NUL" : `\\x${b[at].toString(16).padStart(2, "0")}`);
+    if (at + 4 <= b.length) row(t("chars"), JSON.stringify(readChars(b, at, 4, false)));
   }
   /* ── Find / go to ─────────────────────────────────────── */
   needle() {
@@ -1196,7 +1244,7 @@ var Inspector = class {
     const buf = this.host.buffer();
     const needle = this.needle();
     if (!buf || !needle) {
-      this.host.onStatus("Nothing to look for \u2014 type hex digits, text or a number.");
+      this.host.onStatus(t("Nothing to look for \u2014 type hex digits, text or a number."));
       return;
     }
     let at = -1;
@@ -1220,16 +1268,16 @@ var Inspector = class {
       }
     }
     if (at < 0) {
-      this.host.onStatus("Not found.");
+      this.host.onStatus(t("Not found."));
       return;
     }
     this.host.onFound(at, needle.length);
-    this.host.onStatus(`Found at 0x${at.toString(16)}.`);
+    this.host.onStatus(t("Found at {offset}.", { offset: `0x${at.toString(16)}` }));
   }
   goto() {
     const v = parseNumber(this.gotoBox.value);
     if (v === null) {
-      this.host.onStatus("An offset is a number: 1234 or 0x4d2.");
+      this.host.onStatus(t("An offset is a number: 1234 or 0x4d2."));
       return;
     }
     this.host.onGoto(v);
@@ -1276,7 +1324,7 @@ var Inspector = class {
     const root = this.host.layout();
     const buf = this.host.buffer();
     if (!root || !buf) {
-      this.tree.append(h("div", { className: "sx-hint" }, buf ? "No layout for this section. Hover the bytes for their offsets; the hex view still edits them." : ""));
+      this.tree.append(h("div", { className: "sx-hint" }, buf ? t("No layout for this section. Hover the bytes for their offsets; the hex view still edits them.") : ""));
       return;
     }
     this.expanded.add(key(root));
@@ -1289,7 +1337,7 @@ var Inspector = class {
     const k = key(node);
     const container = !!node.child && !!node.count;
     const open = container && this.expanded.has(k);
-    const row = h("div", { className: `sx-node ${container ? "cont" : "leaf"}${this.selectedKey === k ? " on" : ""}`, style: `padding-left:${6 + depth * 12}px`, title: node.doc ?? "" });
+    const row = h("div", { className: `sx-node ${container ? "cont" : "leaf"}${this.selectedKey === k ? " on" : ""}`, style: `padding-left:${6 + depth * 12}px`, title: node.doc ? translate(node.doc) : "" });
     const tw = h("span", { className: "sx-tw" }, container ? open ? "\u25BE" : "\u25B8" : "");
     tw.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1300,7 +1348,7 @@ var Inspector = class {
     });
     row.append(tw, h("span", { className: "sx-lbl" }, node.label));
     if (container) {
-      const summary = node.summary?.() ?? `${node.count} ${node.count === 1 ? "entry" : "entries"}, ${node.size.toLocaleString()} bytes`;
+      const summary = node.summary?.() ?? t("{n, plural, one {# entry} other {# entries}}, {size} bytes", { n: node.count, size: node.size.toLocaleString() });
       row.append(h("span", { className: "sx-mean" }, ` ${summary}`));
     } else {
       const d = describe(node, buf.bytes, ctx, siblingsOf([...path, node], buf.bytes));
@@ -1341,7 +1389,7 @@ var Inspector = class {
           this.pages.set(k, page + 1);
           this.renderTree();
         } }, "\u203A"),
-        h("span", null, `of ${count.toLocaleString()}`)
+        h("span", null, t("of {n}", { n: count.toLocaleString() }))
       ));
     }
     for (let i = from; i < to; i++) frag.append(this.renderNode(node.child(i), depth + 1, next));
@@ -1349,11 +1397,245 @@ var Inspector = class {
   }
 };
 function parseNumber(text) {
-  const t = text.trim();
-  if (/^-?0x[0-9a-f]+$/i.test(t)) return parseInt(t, 16);
-  if (/^-?\d+$/.test(t)) return parseInt(t, 10);
+  const t2 = text.trim();
+  if (/^-?0x[0-9a-f]+$/i.test(t2)) return parseInt(t2, 16);
+  if (/^-?\d+$/.test(t2)) return parseInt(t2, 10);
   return null;
 }
+
+// ko.ts
+var KO = {
+  "(not in the list)": "(\uBAA9\uB85D\uC5D0 \uC5C6\uC74C)",
+  "1 = the game uses units.dat / weapons.dat for this type.": "1\uC774\uBA74 \uAC8C\uC784\uC774 \uC774 \uC885\uB958\uC5D0 units.dat / weapons.dat \uAC12\uC744 \uC501\uB2C8\uB2E4.",
+  "A section name is one to four characters.": "\uC139\uC158 \uC774\uB984\uC740 \uD55C \uAE00\uC790\uC5D0\uC11C \uB124 \uAE00\uC790\uC785\uB2C8\uB2E4.",
+  "A set bit excludes that elevation; 0 is everywhere.": "\uCF1C\uC9C4 \uBE44\uD2B8\uB294 \uADF8 \uB192\uC774\uB97C \uC81C\uC678\uD569\uB2C8\uB2E4. 0\uC774\uBA74 \uBAA8\uB4E0 \uACF3\uC785\uB2C8\uB2E4.",
+  "A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps).": "\uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8\uBA74 sprites.dat ID, \uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8 \uD50C\uB798\uADF8\uAC00 \uAEBC\uC838 \uC788\uC73C\uBA74 units.dat ID\uC785\uB2C8\uB2E4 (\uBB38, \uD568\uC815).",
+  "Add": "\uCD94\uAC00",
+  "Added {name} ({n} bytes).": "{name}\uC744(\uB97C) \uCD94\uAC00\uD588\uC2B5\uB2C8\uB2E4 ({n}\uBC14\uC774\uD2B8).",
+  "Add\u2026": "\uCD94\uAC00\u2026",
+  "Alignment byte.": "\uC815\uB82C\uC6A9 \uBC14\uC774\uD2B8.",
+  "An offset is a number: 1234 or 0x4d2.": "\uC624\uD504\uC14B\uC740 \uC22B\uC790\uC785\uB2C8\uB2E4: 1234 \uB610\uB294 0x4d2.",
+  "Append": "\uB05D\uC5D0 \uCD94\uAC00",
+  "Append a blank record at the end": "\uBE48 \uB808\uCF54\uB4DC\uB97C \uB05D\uC5D0 \uCD94\uAC00\uD569\uB2C8\uB2E4",
+  "Applied {n, plural, one {# section} other {# sections}}.": "\uC139\uC158 {n}\uAC1C\uB97C \uC801\uC6A9\uD588\uC2B5\uB2C8\uB2E4.",
+  "Apply": "\uC801\uC6A9",
+  "Apply ({n})": "\uC801\uC6A9 ({n})",
+  "Apply failed: {error}": "\uC801\uC6A9\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: {error}",
+  "Byte offset of each string from the start of the section; index 0 has no entry.": "\uC139\uC158 \uC2DC\uC791\uBD80\uD130 \uAC01 \uBB38\uC790\uC5F4\uAE4C\uC9C0\uC758 \uBC14\uC774\uD2B8 \uC624\uD504\uC14B\uC785\uB2C8\uB2E4. \uC778\uB371\uC2A4 0\uC740 \uD56D\uBAA9\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+  "Bytes": "\uBC14\uC774\uD2B8",
+  "Bytes past the end of the layout. The game ignores what it does not read.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC77D\uC9C0 \uC54A\uB294 \uBD80\uBD84\uC744 \uBB34\uC2DC\uD569\uB2C8\uB2E4.",
+  "Cancel": "\uCDE8\uC18C",
+  "Centre of the footprint.": "\uCC28\uC9C0\uD558\uB294 \uC601\uC5ED\uC758 \uC911\uC2EC.",
+  "Centre, in map pixels.": "\uC911\uC2EC, \uB9F5 \uD53D\uC140 \uB2E8\uC704.",
+  "Change the four-character name": "\uB124 \uAE00\uC790 \uC774\uB984\uC744 \uBC14\uAFC9\uB2C8\uB2E4",
+  "Changed here and not yet applied": "\uC5EC\uAE30\uC11C \uBC14\uAFE8\uACE0 \uC544\uC9C1 \uC801\uC6A9\uD558\uC9C0 \uC54A\uC74C",
+  "Choose a section on the left.": "\uC67C\uCABD\uC5D0\uC11C \uC139\uC158\uC744 \uACE0\uB974\uC138\uC694.",
+  "Close": "\uB2EB\uAE30",
+  "Could not read {file}: {error}": "{file}\uC744(\uB97C) \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: {error}",
+  "Declares {n} bytes but the file ended early": "{n}\uBC14\uC774\uD2B8\uB77C\uACE0 \uC120\uC5B8\uD588\uC9C0\uB9CC \uD30C\uC77C\uC774 \uBA3C\uC800 \uB05D\uB0AC\uC2B5\uB2C8\uB2E4",
+  "Delete record": "\uB808\uCF54\uB4DC \uC0AD\uC81C",
+  "Download the scenario file as Save would write it (scenario.chk, no archive)": "\uC800\uC7A5\uD560 \uB54C \uC4F0\uB294 \uADF8\uB300\uB85C \uC2DC\uB098\uB9AC\uC624 \uD30C\uC77C\uC744 \uB0B4\uB824\uBC1B\uC2B5\uB2C8\uB2E4 (scenario.chk, \uC544\uCE74\uC774\uBE0C \uC5C6\uC74C)",
+  "Download this section's bytes": "\uC774 \uC139\uC158\uC758 \uBC14\uC774\uD2B8\uB97C \uB0B4\uB824\uBC1B\uC2B5\uB2C8\uB2E4",
+  "Drop every change and read the sections again": "\uBAA8\uB4E0 \uBCC0\uACBD\uC744 \uBC84\uB9AC\uACE0 \uC139\uC158\uC744 \uB2E4\uC2DC \uC77D\uC2B5\uB2C8\uB2E4",
+  "EUD mask; 0 in ordinary maps.": "EUD \uB9C8\uC2A4\uD06C. \uC77C\uBC18 \uB9F5\uC5D0\uC11C\uB294 0\uC785\uB2C8\uB2E4.",
+  "Export": "\uB0B4\uBCF4\uB0B4\uAE30",
+  "Export .chk": ".chk \uB0B4\uBCF4\uB0B4\uAE30",
+  "Exported {n} bytes.": "{n}\uBC14\uC774\uD2B8\uB97C \uB0B4\uBCF4\uB0C8\uC2B5\uB2C8\uB2E4.",
+  "Failed: {error}": "\uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4: {error}",
+  "Find": "\uCC3E\uAE30",
+  "Find next (Enter); Shift+Enter finds the previous": "\uB2E4\uC74C \uCC3E\uAE30 (Enter). Shift+Enter\uB294 \uC774\uC804\uC744 \uCC3E\uC2B5\uB2C8\uB2E4",
+  "Fit to {n}": "{n}\uC5D0 \uB9DE\uCD94\uAE30",
+  "Fog of war: one byte per cell, one bit per player 1\u20138, set where that player starts unexplored. A map without MASK is fully fogged.": "\uC804\uC7A5\uC758 \uC548\uAC1C: \uCE78\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8, \uD50C\uB808\uC774\uC5B4 1\u20138\uB9C8\uB2E4 \uD55C \uBE44\uD2B8\uB85C, \uADF8 \uD50C\uB808\uC774\uC5B4\uAC00 \uD0D0\uC0C9\uD558\uC9C0 \uC54A\uC740 \uC0C1\uD0DC\uB85C \uC2DC\uC791\uD558\uB294 \uACF3\uC5D0 \uCF1C\uC9D1\uB2C8\uB2E4. MASK\uAC00 \uC5C6\uB294 \uB9F5\uC740 \uC804\uBD80 \uC548\uAC1C\uC5D0 \uB36E\uC785\uB2C8\uB2E4.",
+  "Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags.": "\uC138\uB825: \uD50C\uB808\uC774 \uAC00\uB2A5\uD55C \uC5EC\uB35F \uC2AC\uB86F\uC774 \uAC01\uAC01 \uC18D\uD55C \uC138\uB825, \uB124 \uC138\uB825\uC758 \uC774\uB984, \uC138\uB825\uBCC4 \uD50C\uB798\uADF8.",
+  "Found at {offset}.": "{offset}\uC5D0\uC11C \uCC3E\uC558\uC2B5\uB2C8\uB2E4.",
+  "Game frames.": "\uAC8C\uC784 \uD504\uB808\uC784.",
+  "Hit points \xD7 256.": "\uCCB4\uB825 \xD7 256.",
+  "How relatedSerial is linked.": "relatedSerial\uC774 \uC5F0\uACB0\uB41C \uBC29\uC2DD.",
+  "Import .chk\u2026": ".chk \uAC00\uC838\uC624\uAE30\u2026",
+  "Import\u2026": "\uAC00\uC838\uC624\uAE30\u2026",
+  "Index into the tileset's dddata.bin.": "\uD0C0\uC77C\uC14B dddata.bin\uC758 \uC778\uB371\uC2A4.",
+  "Insert a blank {n}-byte record before the one under the cursor": "\uCEE4\uC11C \uC544\uB798 \uB808\uCF54\uB4DC \uC55E\uC5D0 {n}\uBC14\uC774\uD2B8\uC9DC\uB9AC \uBE48 \uB808\uCF54\uB4DC\uB97C \uB123\uC2B5\uB2C8\uB2E4",
+  "Insert a new section": "\uC0C8 \uC139\uC158\uC744 \uB123\uC2B5\uB2C8\uB2E4",
+  "Insert mode": "\uC0BD\uC785 \uBAA8\uB4DC",
+  "Insert mode: typed and pasted bytes are inserted rather than overwritten; Delete removes bytes. Also the Insert key.": "\uC0BD\uC785 \uBAA8\uB4DC: \uC785\uB825\uD558\uAC70\uB098 \uBD99\uC5EC \uB123\uC740 \uBC14\uC774\uD2B8\uB97C \uB36E\uC5B4\uC4F0\uC9C0 \uC54A\uACE0 \uB07C\uC6CC \uB123\uC2B5\uB2C8\uB2E4. Delete\uB294 \uBC14\uC774\uD2B8\uB97C \uC9C0\uC6C1\uB2C8\uB2E4. Insert \uD0A4\uB85C\uB3C4 \uBC14\uB01D\uB2C8\uB2E4.",
+  "Insert record": "\uB808\uCF54\uB4DC \uC0BD\uC785",
+  "Inserted a blank record at {offset}.": "{offset}\uC5D0 \uBE48 \uB808\uCF54\uB4DC\uB97C \uB123\uC5C8\uC2B5\uB2C8\uB2E4.",
+  "Inspector": "\uAC80\uC0AC\uAE30",
+  "Interceptors or Scarabs.": "\uC778\uD130\uC149\uD130 \uB610\uB294 \uC2A4\uCE90\uB7FD.",
+  "Kept as bytes and written back unchanged": "\uBC14\uC774\uD2B8 \uADF8\uB300\uB85C \uB450\uC5C8\uB2E4\uAC00 \uBC14\uAFB8\uC9C0 \uC54A\uACE0 \uB2E4\uC2DC \uC500",
+  "Kept the section.": "\uC139\uC158\uC744 \uADF8\uB300\uB85C \uB450\uC5C8\uC2B5\uB2C8\uB2E4.",
+  "Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere.": "\uB85C\uCF00\uC774\uC158, \uAC01 20\uBC14\uC774\uD2B8: \uC624\uB9AC\uC9C0\uB110 \uB9F5\uC740 64\uC2AC\uB86F, \uBE0C\uB8E8\uB4DC \uC6CC\uB294 255\uC2AC\uB86F. \uC2AC\uB86F 63\uC740 Anywhere\uC785\uB2C8\uB2E4.",
+  "Map width and height in tiles.": "\uD0C0\uC77C \uB2E8\uC704\uC758 \uB9F5 \uB108\uBE44\uC640 \uB192\uC774.",
+  "Minerals or gas held by a resource unit.": "\uC790\uC6D0 \uC720\uB2DB\uC774 \uAC00\uC9C4 \uBBF8\uB124\uB784 \uB610\uB294 \uAC00\uC2A4.",
+  "Mission briefings: the same record as TRIG with briefing action types.": "\uBBF8\uC158 \uBE0C\uB9AC\uD551: TRIG\uC640 \uAC19\uC740 \uB808\uCF54\uB4DC\uC5D0 \uBE0C\uB9AC\uD551 \uC561\uC158 \uC885\uB958\uB97C \uC501\uB2C8\uB2E4.",
+  "Move down": "\uC544\uB798\uB85C \uC774\uB3D9",
+  "Move up": "\uC704\uB85C \uC774\uB3D9",
+  "Moved.": "\uC62E\uACBC\uC2B5\uB2C8\uB2E4.",
+  "No bytes.": "\uBC14\uC774\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+  "No layout for this section. Hover the bytes for their offsets; the hex view still edits them.": "\uC774 \uC139\uC158\uC758 \uB808\uC774\uC544\uC6C3\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBC14\uC774\uD2B8 \uC704\uC5D0 \uD3EC\uC778\uD130\uB97C \uB450\uBA74 \uC624\uD504\uC14B\uC774 \uBCF4\uC774\uACE0, 16\uC9C4 \uBCF4\uAE30\uC5D0\uC11C \uD3B8\uC9D1\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+  "Not found.": "\uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+  "Not part of the layout.": "\uB808\uC774\uC544\uC6C3\uC5D0 \uC18D\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "Nothing to apply.": "\uC801\uC6A9\uD560 \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+  "Nothing to look for \u2014 type hex digits, text or a number.": "\uCC3E\uC744 \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. 16\uC9C4 \uC22B\uC790, \uD14D\uC2A4\uD2B8 \uB610\uB294 \uC22B\uC790\uB97C \uC785\uB825\uD558\uC138\uC694.",
+  "Nothing to paste \u2014 hex digits in the byte column, text in the text column.": "\uBD99\uC5EC \uB123\uC744 \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBC14\uC774\uD2B8 \uC5F4\uC5D0\uB294 16\uC9C4 \uC22B\uC790, \uD14D\uC2A4\uD2B8 \uC5F4\uC5D0\uB294 \uD14D\uC2A4\uD2B8\uB97C \uB123\uC73C\uC138\uC694.",
+  "Occurrence {n} of {count}; the game combines them ({mode})": "{count}\uAC1C \uC911 {n}\uBC88\uC9F8. \uAC8C\uC784\uC774 \uC774\uB4E4\uC744 \uD569\uCE69\uB2C8\uB2E4 ({mode})",
+  "One byte per player group; non-zero means the trigger runs for that group.": "\uD50C\uB808\uC774\uC5B4 \uADF8\uB8F9\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8. 0\uC774 \uC544\uB2C8\uBA74 \uD2B8\uB9AC\uAC70\uAC00 \uADF8 \uADF8\uB8F9\uC5D0\uC11C \uC2E4\uD589\uB429\uB2C8\uB2E4.",
+  "Pad with zeros or cut to {n} bytes": "0\uC73C\uB85C \uCC44\uC6B0\uAC70\uB098 \uC798\uB77C\uC11C {n}\uBC14\uC774\uD2B8\uB85C \uB9CC\uB4ED\uB2C8\uB2E4",
+  "Pasted {n, plural, one {# byte} other {# bytes}}.": "{n}\uBC14\uC774\uD2B8\uB97C \uBD99\uC5EC \uB123\uC5C8\uC2B5\uB2C8\uB2E4.",
+  "Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2.": "\uBC30\uCE58\uD55C \uC7A5\uC2DD\uBB3C, \uAC01 8\uBC14\uC774\uD2B8. \uAC8C\uC784\uC740 \uC774 \uC139\uC158\uC744 \uC77D\uC9C0 \uC54A\uACE0 MTXM\uC758 \uD0C0\uC77C\uACFC THG2\uC758 \uC624\uBC84\uB808\uC774 \uC2A4\uD504\uB77C\uC774\uD2B8\uB97C \uBD05\uB2C8\uB2E4.",
+  "Placed units, 36 bytes each, in the order they were placed.": "\uBC30\uCE58\uD55C \uC720\uB2DB, \uAC01 36\uBC14\uC774\uD2B8, \uBC30\uCE58\uD55C \uC21C\uC11C\uB300\uB85C.",
+  "Read {n} bytes from {file} \u2014 Apply to keep them.": "{file}\uC5D0\uC11C {n}\uBC14\uC774\uD2B8\uB97C \uC77D\uC5C8\uC2B5\uB2C8\uB2E4. \uC720\uC9C0\uD558\uB824\uBA74 \uC801\uC6A9\uD558\uC138\uC694.",
+  "Redo": "\uB2E4\uC2DC \uC2E4\uD589",
+  "Redo (Ctrl+Y)": "\uB2E4\uC2DC \uC2E4\uD589 (Ctrl+Y)",
+  "Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR.": "\uB9AC\uB9C8\uC2A4\uD130 \uD50C\uB808\uC774\uC5B4 \uC0C9: \uD50C\uB808\uC774 \uAC00\uB2A5\uD55C \uC2AC\uB86F\uB9C8\uB2E4 RGB \uC138 \uAC12, \uADF8\uB2E4\uC74C \uC2AC\uB86F\uB9C8\uB2E4 \uAC8C\uC784\uC774 \uADF8 \uC0C9, \uB85C\uBE44 \uC120\uD0DD, \uBB34\uC791\uC704 \uC0C9, COLR \uC911 \uBB34\uC5C7\uC744 \uC4F0\uB294\uC9C0 \uC815\uD558\uB294 \uBAA8\uB4DC \uBC14\uC774\uD2B8.",
+  "Remove": "\uC81C\uAC70",
+  "Remove the record under the cursor": "\uCEE4\uC11C \uC544\uB798 \uB808\uCF54\uB4DC\uB97C \uC9C0\uC6C1\uB2C8\uB2E4",
+  "Remove this occurrence from the file": "\uD30C\uC77C\uC5D0\uC11C \uC774 \uC139\uC158\uC744 \uC81C\uAC70\uD569\uB2C8\uB2E4",
+  "Remove {name}": "{name} \uC81C\uAC70",
+  "Remove {name} ({n} bytes) from the file?": "\uD30C\uC77C\uC5D0\uC11C {name}({n}\uBC14\uC774\uD2B8)\uC744(\uB97C) \uC81C\uAC70\uD560\uAE4C\uC694?",
+  "Removed the record at {offset}.": "{offset}\uC758 \uB808\uCF54\uB4DC\uB97C \uC9C0\uC6E0\uC2B5\uB2C8\uB2E4.",
+  "Removed the section.": "\uC139\uC158\uC744 \uC81C\uAC70\uD588\uC2B5\uB2C8\uB2E4.",
+  "Rename": "\uC774\uB984 \uBC14\uAFB8\uAE30",
+  "Renamed to {name}.": "\uC774\uB984\uC744 {name}(\uC73C)\uB85C \uBC14\uAFE8\uC2B5\uB2C8\uB2E4.",
+  "Rename\u2026": "\uC774\uB984 \uBC14\uAFB8\uAE30\u2026",
+  "Replace the whole scenario with a .chk file": "\uC2DC\uB098\uB9AC\uC624 \uC804\uCCB4\uB97C .chk \uD30C\uC77C\uB85C \uBC14\uAFC9\uB2C8\uB2E4",
+  "Replace this section's bytes with a file's (then Apply)": "\uC774 \uC139\uC158\uC758 \uBC14\uC774\uD2B8\uB97C \uD30C\uC77C\uC758 \uBC14\uC774\uD2B8\uB85C \uBC14\uAFC9\uB2C8\uB2E4 (\uADF8\uB2E4\uC74C \uC801\uC6A9)",
+  "Replaced the scenario with {file}.": "\uC2DC\uB098\uB9AC\uC624\uB97C {file}(\uC73C)\uB85C \uBC14\uAFE8\uC2B5\uB2C8\uB2E4.",
+  "Resized to {n} bytes.": "{n}\uBC14\uC774\uD2B8\uB85C \uD06C\uAE30\uB97C \uBC14\uAFE8\uC2B5\uB2C8\uB2E4.",
+  "Resource, score type or switch number, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uC790\uC6D0, \uC810\uC218 \uC885\uB958 \uB610\uB294 \uC2A4\uC704\uCE58 \uBC88\uD638.",
+  "Revert": "\uB418\uB3CC\uB9AC\uAE30",
+  "Reverted \u2014 every section read again from the map.": "\uB418\uB3CC\uB838\uC2B5\uB2C8\uB2E4. \uBAA8\uB4E0 \uC139\uC158\uC744 \uB9F5\uC5D0\uC11C \uB2E4\uC2DC \uC77D\uC5C8\uC2B5\uB2C8\uB2E4.",
+  "Scroll the map to {target} and select it": "\uB9F5\uC744 {target}(\uC73C)\uB85C \uC2A4\uD06C\uB864\uD558\uACE0 \uC120\uD0DD\uD569\uB2C8\uB2E4",
+  "Second player, destination location, amount, switch, AI script or properties slot, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uB450 \uBC88\uC9F8 \uD50C\uB808\uC774\uC5B4, \uBAA9\uC801\uC9C0 \uB85C\uCF00\uC774\uC158, \uC591, \uC2A4\uC704\uCE58, AI \uC2A4\uD06C\uB9BD\uD2B8 \uB610\uB294 \uC18D\uC131 \uC2AC\uB86F.",
+  "Section Explorer": "\uC139\uC158 \uD0D0\uC0C9\uAE30",
+  "Section Explorer: open a map first.": "\uC139\uC158 \uD0D0\uC0C9\uAE30: \uBA3C\uC800 \uB9F5\uC744 \uC5EC\uC138\uC694.",
+  "Section Explorer: {text}": "\uC139\uC158 \uD0D0\uC0C9\uAE30: {text}",
+  "Section Explorer\u2026": "\uC139\uC158 \uD0D0\uC0C9\uAE30\u2026",
+  "Sections": "\uC139\uC158",
+  "Set the section's length (zero-padded or cut); Enter applies": "\uC139\uC158 \uAE38\uC774\uB97C \uC815\uD569\uB2C8\uB2E4 (0\uC73C\uB85C \uCC44\uC6B0\uAC70\uB098 \uC790\uB984). Enter\uB85C \uC801\uC6A9",
+  "Show on map": "\uB9F5\uC5D0\uC11C \uBCF4\uAE30",
+  "Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays.": "\uC2A4\uD504\uB77C\uC774\uD2B8, \uAC01 10\uBC14\uC774\uD2B8: \uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8(\uC21C\uC218 \uD50C\uB798\uADF8\uC640 sprites.dat ID), \uC720\uB2DB \uC2A4\uD504\uB77C\uC774\uD2B8(units.dat ID\uB85C \uB41C \uBB38\uACFC \uD568\uC815), \uADF8\uB9AC\uACE0 \uC7A5\uC2DD\uBB3C \uC624\uBC84\uB808\uC774.",
+  "StarEdit's copy of the player controllers. The game reads OWNR.": "StarEdit\uC774 \uB530\uB85C \uB454 \uD50C\uB808\uC774\uC5B4 \uC870\uC885\uC790 \uC0AC\uBCF8. \uAC8C\uC784\uC740 OWNR\uC744 \uC77D\uC2B5\uB2C8\uB2E4.",
+  "StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it.": "\uC7A5\uC2DD\uBB3C\uC744 \uBE80 \uC9C0\uD615\uC758 StarEdit \uC0AC\uBCF8: \uAC01 \uC7A5\uC2DD\uBB3C \uC544\uB798\uC5D0 \uC788\uB294 \uAC83. MTXM\uACFC \uAC19\uC740 \uB808\uC774\uC544\uC6C3\uC774\uBA70 \uAC8C\uC784\uC740 \uBB34\uC2DC\uD569\uB2C8\uB2E4.",
+  "String index of a custom name, 0 for the default.": "\uC0AC\uC6A9\uC790 \uC9C0\uC815 \uC774\uB984\uC758 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4, \uAE30\uBCF8\uAC12\uC774\uBA74 0.",
+  "Switch names: 256 string indices, 0 for an unnamed switch.": "\uC2A4\uC704\uCE58 \uC774\uB984: \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 256\uAC1C, \uC774\uB984 \uC5C6\uB294 \uC2A4\uC704\uCE58\uB294 0.",
+  "Technology restrictions, Brood War layout (44 technologies).": "\uAE30\uC220 \uC81C\uD55C, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 44\uAC1C).",
+  "Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them.": "\uAE30\uC220 \uC81C\uD55C, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 24\uAC1C): \uD50C\uB808\uC774\uC5B4\uBCC4 \uC0AC\uC6A9 \uAC00\uB2A5 \uC5EC\uBD80\uC640 \uC5F0\uAD6C \uC0C1\uD0DC, \uC804\uCCB4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0.",
+  "Technology settings, Brood War layout (44 technologies).": "\uAE30\uC220 \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 44\uAC1C).",
+  "Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs.": "\uAE30\uC220 \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 24\uAC1C): \uAE30\uBCF8\uAC12 \uC0AC\uC6A9, \uADF8\uB2E4\uC74C \uBBF8\uB124\uB784, \uAC00\uC2A4, \uC2DC\uAC04, \uC5D0\uB108\uC9C0 \uBE44\uC6A9.",
+  "The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number.": "\uC18D\uC131 \uC788\uB294 \uC720\uB2DB \uC0DD\uC131 \uC2AC\uB86F(CUWP) 64\uAC1C, \uAC01 20\uBC14\uC774\uD2B8. \uC561\uC158\uC740 \uC2AC\uB86F \uBC88\uD638\uB85C \uAC00\uB9AC\uD0B5\uB2C8\uB2E4.",
+  "The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text.": "\uB9AC\uB9C8\uC2A4\uD130 \uBB38\uC790\uC5F4 \uD45C: STR\uACFC \uAC19\uC9C0\uB9CC \uAC1C\uC218\uC640 \uC624\uD504\uC14B\uC774 32\uBE44\uD2B8\uB77C \uB9F5\uC774 65,535\uBC14\uC774\uD2B8\uAC00 \uB118\uB294 \uD14D\uC2A4\uD2B8\uB97C \uB2F4\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+  "The StarEdit version that wrote the file (11 for every release version).": "\uD30C\uC77C\uC744 \uC4F4 StarEdit \uBC84\uC804 (\uC815\uC2DD \uBC84\uC804\uC740 \uBAA8\uB450 11).",
+  "The StarEdit version that wrote the file (obsolete; 9 or 10). Not required.": "\uD30C\uC77C\uC744 \uC4F4 StarEdit \uBC84\uC804 (\uB354 \uC4F0\uC774\uC9C0 \uC54A\uC74C, 9 \uB610\uB294 10). \uD544\uC218\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
+  "The colour of each of the eight playable slots, as an index into the game's colour table.": "\uD50C\uB808\uC774 \uAC00\uB2A5\uD55C \uC5EC\uB35F \uC2AC\uB86F\uC758 \uC0C9, \uAC8C\uC784 \uC0C9 \uD45C\uC758 \uC778\uB371\uC2A4.",
+  "The editor decodes this section; an applied edit is read back into the map.": "\uC5D0\uB514\uD130\uAC00 \uC774 \uC139\uC158\uC744 \uD574\uC11D\uD569\uB2C8\uB2E4. \uC801\uC6A9\uD55C \uD3B8\uC9D1\uC740 \uB9F5\uC73C\uB85C \uB2E4\uC2DC \uC77D\uD799\uB2C8\uB2E4.",
+  "The editor has no layout for this section; the bytes are shown as they are.": "\uC5D0\uB514\uD130\uC5D0 \uC774 \uC139\uC158\uC758 \uB808\uC774\uC544\uC6C3\uC774 \uC5C6\uC5B4 \uBC14\uC774\uD2B8\uB97C \uADF8\uB300\uB85C \uBCF4\uC5EC \uC90D\uB2C8\uB2E4.",
+  "The editor has unsaved changes here; what you see is what Save would write.": "\uC5D0\uB514\uD130\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uBCF4\uC774\uB294 \uAC83\uC740 \uC800\uC7A5\uD558\uBA74 \uC4F0\uC77C \uB0B4\uC6A9\uC785\uB2C8\uB2E4.",
+  "The editor has unsaved changes that will be encoded here on Save": "\uC5D0\uB514\uD130\uC5D0 \uC800\uC7A5\uD560 \uB54C \uC5EC\uAE30\uC5D0 \uAE30\uB85D\uB420, \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4",
+  "The editor keeps this section as bytes and writes it back unchanged.": "\uC5D0\uB514\uD130\uB294 \uC774 \uC139\uC158\uC744 \uBC14\uC774\uD2B8 \uADF8\uB300\uB85C \uB450\uC5C8\uB2E4\uAC00 \uBC14\uAFB8\uC9C0 \uC54A\uACE0 \uB2E4\uC2DC \uC501\uB2C8\uB2E4.",
+  "The editor knows nothing about this section": "\uC5D0\uB514\uD130\uAC00 \uC774 \uC139\uC158\uC5D0 \uB300\uD574 \uC544\uB294 \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4",
+  "The editor models this section: removing it changes what the map is.": "\uC5D0\uB514\uD130\uAC00 \uC774 \uC139\uC158\uC744 \uD574\uC11D\uD574 \uC501\uB2C8\uB2E4. \uC81C\uAC70\uD558\uBA74 \uB9F5\uC758 \uB0B4\uC6A9\uC774 \uBC14\uB01D\uB2C8\uB2E4.",
+  "The file format revision. Decides which settings sections the game reads.": "\uD30C\uC77C \uD615\uC2DD \uAC1C\uC815 \uBC88\uD638. \uAC8C\uC784\uC774 \uC5B4\uB290 \uC124\uC815 \uC139\uC158\uC744 \uC77D\uC744\uC9C0 \uC815\uD569\uB2C8\uB2E4.",
+  "The game reads {n} bytes here": "\uAC8C\uC784\uC740 \uC5EC\uAE30\uC11C {n}\uBC14\uC774\uD2B8\uB97C \uC77D\uC2B5\uB2C8\uB2E4",
+  "The game's bookkeeping; StarEdit writes 0.": "\uAC8C\uC784\uC758 \uB0B4\uBD80 \uAE30\uB85D. StarEdit\uC740 0\uC744 \uC501\uB2C8\uB2E4.",
+  "The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it.": "StarEdit\uC758 \uC544\uC774\uC18C\uBA54\uD2B8\uB9AD \uBE0C\uB7EC\uC2DC\uAC00 \uB2E4\uB8E8\uB294 \uC544\uC774\uC18C\uBA54\uD2B8\uB9AD \uC9C0\uD615 \uACA9\uC790: \uB9C8\uB984\uBAA8\uB9C8\uB2E4 \uD55C \uCE78, \uCE78\uB9C8\uB2E4 \uAC00\uC7A5\uC790\uB9AC \uAC12 \uB124 \uAC1C. \uAC8C\uC784\uC740 \uBB34\uC2DC\uD569\uB2C8\uB2E4.",
+  "The map type: RAWS for an original or hybrid map, RAWB for Brood War.": "\uB9F5 \uC885\uB958: \uC624\uB9AC\uC9C0\uB110\uC774\uB098 \uD558\uC774\uBE0C\uB9AC\uB4DC \uB9F5\uC740 RAWS, \uBE0C\uB8E8\uB4DC \uC6CC\uB294 RAWB.",
+  "The parser said: {warnings}": "\uD30C\uC11C \uBA54\uC2DC\uC9C0: {warnings}",
+  "The race of each of the twelve player slots.": "\uC5F4\uB450 \uD50C\uB808\uC774\uC5B4 \uC2AC\uB86F\uC758 \uC885\uC871.",
+  "The section's structure; click to jump": "\uC139\uC158\uC758 \uAD6C\uC870. \uD074\uB9AD\uD558\uBA74 \uC774\uB3D9\uD569\uB2C8\uB2E4",
+  "The size is a whole number of bytes.": "\uD06C\uAE30\uB294 \uBC14\uC774\uD2B8 \uB2E8\uC704\uC758 \uC815\uC218\uC785\uB2C8\uB2E4.",
+  "The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\\u2026). Play WAV actions store the string index itself.": "\uC0AC\uC6B4\uB4DC \uD45C: \uC544\uCE74\uC774\uBE0C \uC548 \uC0AC\uC6B4\uB4DC \uD30C\uC77C(staredit\\wav\\\u2026)\uC758 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 512\uAC1C. Play WAV \uC561\uC158\uC740 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 \uC790\uCCB4\uB97C \uC800\uC7A5\uD569\uB2C8\uB2E4.",
+  "The string indices of the scenario's name and description.": "\uC2DC\uB098\uB9AC\uC624 \uC774\uB984\uACFC \uC124\uBA85\uC758 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4.",
+  "The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string.": "\uBB38\uC790\uC5F4 \uD45C: 16\uBE44\uD2B8 \uAC1C\uC218, \uBB38\uC790\uC5F4\uB9C8\uB2E4 16\uBE44\uD2B8 \uC624\uD504\uC14B \uD558\uB098(\uC778\uB371\uC2A4\uB294 1\uBD80\uD130), \uADF8\uB2E4\uC74C NUL\uB85C \uB05D\uB098\uB294 latin-1 \uBB38\uC790\uC5F4. \uC778\uB371\uC2A4 0\uC740 \uBB38\uC790\uC5F4 \uC5C6\uC74C\uC785\uB2C8\uB2E4.",
+  "The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4).": "\uAC8C\uC784\uC774 \uADF8\uB9AC\uB294 \uC9C0\uD615: \uCE78\uB9C8\uB2E4 16\uBE44\uD2B8 \uD0C0\uC77C ID, \uD589 \uC21C\uC11C\uB300\uB85C, \uC7A5\uC2DD\uBB3C\uC774 \uCC0D\uD78C \uC0C1\uD0DC. ID\uB294 CV5 \uADF8\uB8F9(\uC0C1\uC704 12\uBE44\uD2B8)\uACFC \uADF8 \uC548\uC758 \uD0C0\uC77C(\uD558\uC704 4\uBE44\uD2B8)\uC785\uB2C8\uB2E4.",
+  "The text, in offset order. A blob shared by several indices is listed once.": "\uC624\uD504\uC14B \uC21C\uC11C\uC758 \uD14D\uC2A4\uD2B8. \uC5EC\uB7EC \uC778\uB371\uC2A4\uAC00 \uD568\uAED8 \uC4F0\uB294 \uB369\uC5B4\uB9AC\uB294 \uD55C \uBC88\uB9CC \uB098\uC635\uB2C8\uB2E4.",
+  "The tileset, as a 16-bit value the game masks to its low three bits.": "\uD0C0\uC77C\uC14B. 16\uBE44\uD2B8 \uAC12\uC774\uBA70 \uAC8C\uC784\uC740 \uD558\uC704 3\uBE44\uD2B8\uB9CC \uBD05\uB2C8\uB2E4.",
+  "The unit this one is linked to (a Nydus exit, an add-on's building).": "\uC774 \uC720\uB2DB\uC774 \uC5F0\uACB0\uB41C \uC720\uB2DB (\uB098\uC774\uB354\uC2A4 \uCD9C\uAD6C, \uC560\uB4DC\uC628\uC758 \uAC74\uBB3C).",
+  "The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused.": "\uAC80\uC99D \uD45C: \uAC8C\uC784\uC774 \uB9F5 \uC139\uC158\uC744 \uD574\uC2DC\uD560 \uB54C \uC4F0\uB294 \uC2DC\uB4DC \uAC12 256\uAC1C\uC640 \uC5F0\uC0B0 \uCF54\uB4DC 16\uAC1C. StarEdit\uC740 \uBAA8\uB4E0 \uB9F5\uC5D0 \uAC19\uC740 \uD45C\uB97C \uC4F0\uACE0, \uB2E4\uB978 \uD45C\uAC00 \uB4E0 \uB9F5\uC740 \uAC70\uBD80\uB429\uB2C8\uB2E4.",
+  "This rewrites the map and clears the undo history \u2014 there is no taking it back.": "\uB9F5\uC744 \uB2E4\uC2DC \uC4F0\uACE0 \uC2E4\uD589 \uCDE8\uC18C \uAE30\uB85D\uC744 \uC9C0\uC6C1\uB2C8\uB2E4. \uB418\uB3CC\uB9B4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+  "This section is empty. Insert a record or bytes from the inspector, or paste hex here.": "\uC774 \uC139\uC158\uC740 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uAC80\uC0AC\uAE30\uC5D0\uC11C \uB808\uCF54\uB4DC\uB098 \uBC14\uC774\uD2B8\uB97C \uB123\uAC70\uB098 \uC5EC\uAE30\uC5D0 16\uC9C4\uC218\uB97C \uBD99\uC5EC \uB123\uC73C\uC138\uC694.",
+  "Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte.": "\uD2B8\uB9AC\uAC70, \uAC01 2400\uBC14\uC774\uD2B8: \uC870\uAC74 16\uAC1C, \uC561\uC158 64\uAC1C, \uD50C\uB798\uADF8, \uD50C\uB808\uC774\uC5B4 \uADF8\uB8F9\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8, \uAC8C\uC784\uC758 \uD604\uC7AC \uC561\uC158 \uBC14\uC774\uD2B8.",
+  "Type hex digits in the byte column or characters in the text column to change it.": "\uBC14\uAFB8\uB824\uBA74 \uBC14\uC774\uD2B8 \uC5F4\uC5D0 16\uC9C4 \uC22B\uC790\uB97C, \uD14D\uC2A4\uD2B8 \uC5F4\uC5D0 \uAE00\uC790\uB97C \uC785\uB825\uD558\uC138\uC694.",
+  "Undo": "\uC2E4\uD589 \uCDE8\uC18C",
+  "Undo (Ctrl+Z in the hex view)": "\uC2E4\uD589 \uCDE8\uC18C (16\uC9C4 \uBCF4\uAE30\uC5D0\uC11C Ctrl+Z)",
+  "Unique per unit within the map; Nydus and add-on links refer to it.": "\uB9F5 \uC548\uC5D0\uC11C \uC720\uB2DB\uB9C8\uB2E4 \uACE0\uC720\uD55C \uAC12. \uB098\uC774\uB354\uC2A4\uC640 \uC560\uB4DC\uC628 \uC5F0\uACB0\uC774 \uC774\uAC83\uC744 \uAC00\uB9AC\uD0B5\uB2C8\uB2E4.",
+  "Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default.": "\uC720\uB2DB \uC0AC\uC6A9 \uAC00\uB2A5 \uC5EC\uBD80: \uD50C\uB808\uC774\uC5B4\uC640 \uC720\uB2DB \uC885\uB958\uB9C8\uB2E4 \uC0DD\uC0B0\uD560 \uC218 \uC788\uB294\uC9C0, \uC885\uB958\uBCC4 \uC804\uCCB4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0.",
+  "Unit count (0 = all), set/add/subtract, switch action, state or order, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uC720\uB2DB \uC218(0 = \uC804\uBD80), \uC124\uC815/\uB354\uD558\uAE30/\uBE7C\uAE30, \uC2A4\uC704\uCE58 \uB3D9\uC791, \uC0C1\uD0DC \uB610\uB294 \uBA85\uB839.",
+  "Unit id, resource, score type or alliance status, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uC720\uB2DB ID, \uC790\uC6D0, \uC810\uC218 \uC885\uB958 \uB610\uB294 \uB3D9\uB9F9 \uC0C1\uD0DC.",
+  "Unit settings, Brood War layout: as UNIS with 130 weapons.": "\uC720\uB2DB \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3: UNIS\uC640 \uAC19\uACE0 \uBB34\uAE30\uAC00 130\uAC1C.",
+  "Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values.": "\uC720\uB2DB \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3: \uC720\uB2DB \uC885\uB958\uB9C8\uB2E4 \uAE30\uBCF8\uAC12 \uC0AC\uC6A9 \uBC14\uC774\uD2B8, \uCCB4\uB825(\xD7256), \uC2E4\uB4DC, \uBC29\uC5B4\uB825, \uC0DD\uC0B0 \uC2DC\uAC04, \uBE44\uC6A9, \uC774\uB984 \uBB38\uC790\uC5F4. \uADF8\uB2E4\uC74C \uBB34\uAE30 100\uAC1C\uC758 \uACF5\uACA9\uB825\uACFC \uCD94\uAC00 \uACF5\uACA9\uB825.",
+  "Untitled": "\uC81C\uBAA9 \uC5C6\uC74C",
+  "Upgrade restrictions, Brood War layout (61 upgrades).": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC81C\uD55C, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 61\uAC1C).",
+  "Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC81C\uD55C, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 46\uAC1C): \uD50C\uB808\uC774\uC5B4\uBCC4 \uCD5C\uB300 \uB808\uBCA8\uACFC \uC2DC\uC791 \uB808\uBCA8, \uC804\uCCB4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0.",
+  "Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column).": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 61\uAC1C, \uAE30\uBCF8\uAC12 \uC0AC\uC6A9 \uC5F4 \uB4A4\uC5D0 \uCC44\uC6C0 \uBC14\uC774\uD2B8 \uD558\uB098).",
+  "Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 46\uAC1C): \uAE30\uBCF8\uAC12 \uC0AC\uC6A9, \uADF8\uB2E4\uC74C \uBBF8\uB124\uB784, \uAC00\uC2A4, \uC2DC\uAC04\uC758 \uAE30\uBCF8 \uBE44\uC6A9\uACFC \uB808\uBCA8\uB2F9 \uC99D\uAC00\uB7C9.",
+  "Went to {target}.": "{target}(\uC73C)\uB85C \uC774\uB3D9\uD588\uC2B5\uB2C8\uB2E4.",
+  "Which of the 64 CUWP slots are in use (StarEdit's bookkeeping).": "CUWP \uC2AC\uB86F 64\uAC1C \uC911 \uC4F0\uC774\uB294 \uAC83 (StarEdit\uC758 \uB0B4\uBD80 \uAE30\uB85D).",
+  "Which of the fields below are set.": "\uC544\uB798 \uD544\uB4DC \uC911 \uC124\uC815\uB41C \uAC83.",
+  "Which special properties the game may read for this unit.": "\uAC8C\uC784\uC774 \uC774 \uC720\uB2DB\uC5D0\uC11C \uC77D\uC744 \uC218 \uC788\uB294 \uD2B9\uC218 \uC18D\uC131.",
+  "Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026": "\uC5F4\uB450 \uD50C\uB808\uC774\uC5B4 \uC2AC\uB86F\uC744 \uAC01\uAC01 \uB204\uAC00 \uC870\uC885\uD558\uB294\uC9C0: \uC0AC\uB78C, \uCEF4\uD4E8\uD130, \uAD6C\uCD9C \uAC00\uB2A5, \uC911\uB9BD, \u2026",
+  "Write every changed section into the map": "\uBC14\uB010 \uC139\uC158\uC744 \uBAA8\uB450 \uB9F5\uC5D0 \uC501\uB2C8\uB2E4",
+  "after the selected one": "\uC120\uD0DD\uD55C \uC139\uC158 \uB4A4",
+  "at the end": "\uB05D\uC5D0",
+  "at {offset}": "{offset} \uC704\uCE58",
+  "before the selected one": "\uC120\uD0DD\uD55C \uC139\uC158 \uC55E",
+  "bits": "\uBE44\uD2B8",
+  "byte {offset}": "\uBC14\uC774\uD2B8 {offset}",
+  "changed \u2014 not applied": "\uBC14\uB01C \u2014 \uC801\uC6A9 \uC548 \uD568",
+  "char": "\uBB38\uC790",
+  "chars": "\uBB38\uC790\uC5F4",
+  "choose": "\uC120\uD0DD",
+  "contents": "\uB0B4\uC6A9",
+  "custom name\u2026": "\uC9C1\uC811 \uC785\uB825\u2026",
+  "cut": "\uC798\uB9BC",
+  "edited": "\uD3B8\uC9D1\uB428",
+  "filter": "\uD544\uD130",
+  "find hex or text": "16\uC9C4\uC218\uB098 \uD14D\uC2A4\uD2B8 \uCC3E\uAE30",
+  "go to 0x\u2026": "\uC774\uB3D9 0x\u2026",
+  "hex": "16\uC9C4\uC218",
+  "insert": "\uC0BD\uC785",
+  "last wins": "\uB9C8\uC9C0\uB9C9 \uAC83 \uC0AC\uC6A9",
+  "length": "\uAE38\uC774",
+  "location {n}": "\uB85C\uCF00\uC774\uC158 {n}",
+  "mode": "\uBAA8\uB4DC",
+  "name": "\uC774\uB984",
+  "not a whole number of {n}-byte records": "{n}\uBC14\uC774\uD2B8 \uB808\uCF54\uB4DC\uC758 \uC815\uC218\uBC30\uAC00 \uC544\uB2D8",
+  "number": "\uC22B\uC790",
+  "occurrence {n} of {count}": "{count}\uAC1C \uC911 {n}\uBC88\uC9F8",
+  "of {n}": "/ {n}",
+  "offset": "\uC624\uD504\uC14B",
+  "overwrite": "\uB36E\uC5B4\uC4F0\uAE30",
+  "position": "\uC704\uCE58",
+  "raw": "\uC6D0\uBCF8",
+  "rename": "\uC0C8 \uC774\uB984",
+  "runs past the end of the section": "\uC139\uC158 \uB05D\uC744 \uB118\uC5B4\uAC10",
+  "section": "\uC139\uC158",
+  "selected": "\uC120\uD0DD",
+  "size": "\uD06C\uAE30",
+  "sprite {n}": "\uC2A4\uD504\uB77C\uC774\uD2B8 {n}",
+  "text": "\uD14D\uC2A4\uD2B8",
+  "the game expects {n} bytes": "\uAC8C\uC784\uC740 {n}\uBC14\uC774\uD2B8\uB97C \uAE30\uB300\uD569\uB2C8\uB2E4",
+  "typing in": "\uC785\uB825 \uC704\uCE58",
+  "unchanged": "\uBC14\uB00C\uC9C0 \uC54A\uC74C",
+  "unit {n}": "\uC720\uB2DB {n}",
+  "units.dat id.": "units.dat ID.",
+  "unknown": "\uC54C \uC218 \uC5C6\uC74C",
+  "unknown section": "\uC54C \uC218 \uC5C6\uB294 \uC139\uC158",
+  "unsaved": "\uC800\uC7A5 \uC548 \uB428",
+  "value": "\uAC12",
+  "what the game reads now (repeats combined)": "\uAC8C\uC784\uC774 \uC9C0\uAE08 \uC77D\uB294 \uB0B4\uC6A9 (\uBC18\uBCF5\uB41C \uAC83 \uD569\uCE68)",
+  "zeros": "0\uC73C\uB85C \uCC44\uC6C0",
+  "{bytes} bytes, {n, plural, one {# section} other {# sections}}": "{bytes}\uBC14\uC774\uD2B8, \uC139\uC158 {n}\uAC1C",
+  "{count} records of {size}": "{size}\uBC14\uC774\uD2B8 \uB808\uCF54\uB4DC {count}\uAC1C",
+  "{mode} on repeat": "\uBC18\uBCF5 \uC2DC {mode}",
+  "{n, plural, one {# entry} other {# entries}}, {size} bytes": "\uD56D\uBAA9 {n}\uAC1C, {size}\uBC14\uC774\uD2B8",
+  "{n, plural, one {# section has} other {# sections have}} changes you have not applied \u2014 Apply, Revert, or press Close again to drop them.": "\uC139\uC158 {n}\uAC1C\uC5D0 \uC801\uC6A9\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uC801\uC6A9\uD558\uAC70\uB098 \uB418\uB3CC\uB9AC\uC138\uC694. \uBC84\uB9AC\uB824\uBA74 \uB2EB\uAE30\uB97C \uD55C \uBC88 \uB354 \uB204\uB974\uC138\uC694.",
+  "{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated.": "\uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 {list}, NUL\uB85C \uB05D\uB0A8.",
+  "{name} at {offset} \u2014 {what}": "{offset}\uC758 {name} \u2014 {what}",
+  "{n} bytes": "{n}\uBC14\uC774\uD2B8",
+  "{n} repeated": "{n}\uAC1C \uBC18\uBCF5",
+  "{n} unknown": "{n}\uAC1C \uC54C \uC218 \uC5C6\uC74C"
+};
 
 // layouts.ts
 var quote = (s, max = 48) => s === null ? "(no such string)" : JSON.stringify(s.length > max ? `${s.slice(0, max)}\u2026` : s);
@@ -1603,31 +1885,31 @@ var perType = (table, mine, fallback) => ({
   }
 });
 var TYPE_LOOKUP = (table, name) => (s, ctx) => {
-  const t = s("type");
-  if (t === 0) return "(empty slot)";
-  const args = (table[t] ?? []).map((a) => argText(a, s, ctx));
-  return `${name(t, ctx)}${args.length ? ` \u2014 ${args.join(", ")}` : ""}`;
+  const t2 = s("type");
+  if (t2 === 0) return "(empty slot)";
+  const args = (table[t2] ?? []).map((a) => argText(a, s, ctx));
+  return `${name(t2, ctx)}${args.length ? ` \u2014 ${args.join(", ")}` : ""}`;
 };
 var UNIT_RECORD = struct("Unit", [
-  u32("serial", HEX, "Unique per unit within the map; Nydus and add-on links refer to it."),
-  u16("x", PX, "Centre, in map pixels."),
-  u16("y", PX, "Centre, in map pixels."),
-  u16("unitId", UNIT, "units.dat id."),
-  u16("relationType", flags(UNIT_RELATION_BITS), "How relatedSerial is linked."),
-  u16("validProperties", flags(UNIT_VALID_BITS), "Which special properties the game may read for this unit."),
-  u16("validStates", flags(UNIT_USED_BITS), "Which of the fields below are set."),
+  u32("serial", HEX, msg("Unique per unit within the map; Nydus and add-on links refer to it.")),
+  u16("x", PX, msg("Centre, in map pixels.")),
+  u16("y", PX, msg("Centre, in map pixels.")),
+  u16("unitId", UNIT, msg("units.dat id.")),
+  u16("relationType", flags(UNIT_RELATION_BITS), msg("How relatedSerial is linked.")),
+  u16("validProperties", flags(UNIT_VALID_BITS), msg("Which special properties the game may read for this unit.")),
+  u16("validStates", flags(UNIT_USED_BITS), msg("Which of the fields below are set.")),
   u8("owner", PLAYER),
   u8("hitPoints", PERCENT),
   u8("shields", PERCENT),
   u8("energy", PERCENT),
-  u32("resources", NUM, "Minerals or gas held by a resource unit."),
-  u16("hangar", NUM, "Interceptors or Scarabs."),
+  u32("resources", NUM, msg("Minerals or gas held by a resource unit.")),
+  u16("hangar", NUM, msg("Interceptors or Scarabs.")),
   u16("stateFlags", flags(UNIT_STATE_BITS)),
   u32("unused", HEX),
-  u32("relatedSerial", HEX, "The unit this one is linked to (a Nydus exit, an add-on's building).")
+  u32("relatedSerial", HEX, msg("The unit this one is linked to (a Nydus exit, an add-on's building)."))
 ], { summary: (r, ctx) => `${ctx.names.unit(r("unitId"))} \u2014 ${ctx.names.player(r("owner"))} at (${r("x")}, ${r("y")})` });
 var SPRITE_RECORD = struct("Sprite", [
-  u16("spriteId", { edit: "number", describe: (v, ctx, s) => s("flags") & 4096 ? `sprites.dat #${v}` : `unit: ${ctx.names.unit(v)}` }, "A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps)."),
+  u16("spriteId", { edit: "number", describe: (v, ctx, s) => s("flags") & 4096 ? `sprites.dat #${v}` : `unit: ${ctx.names.unit(v)}` }, msg("A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps).")),
   u16("x", PX),
   u16("y", PX),
   u8("owner", PLAYER),
@@ -1635,8 +1917,8 @@ var SPRITE_RECORD = struct("Sprite", [
   u16("flags", flags(SPRITE_FLAG_BITS))
 ], { summary: (r, ctx) => `${r("flags") & 4096 ? `sprite #${r("spriteId")}` : ctx.names.unit(r("spriteId"))} at (${r("x")}, ${r("y")})` });
 var DOODAD_RECORD = struct("Doodad", [
-  u16("doodadId", NUM, "Index into the tileset's dddata.bin."),
-  u16("x", PX, "Centre of the footprint."),
+  u16("doodadId", NUM, msg("Index into the tileset's dddata.bin.")),
+  u16("x", PX, msg("Centre of the footprint.")),
   u16("y", PX),
   u8("owner", PLAYER),
   u8("disabled", BOOL)
@@ -1647,7 +1929,7 @@ var LOCATION_RECORD = struct("Location", [
   i32("right", PX),
   i32("bottom", PX),
   u16("nameIndex", STRING),
-  u16("elevationFlags", flags(ELEVATION_BITS), "A set bit excludes that elevation; 0 is everywhere.")
+  u16("elevationFlags", flags(ELEVATION_BITS), msg("A set bit excludes that elevation; 0 is everywhere."))
 ], { summary: (r, ctx) => `${r("nameIndex") ? quote(ctx.names.string(r("nameIndex")), 24) : "(unnamed)"} \u2014 (${r("left")}, ${r("top")})\u2013(${r("right")}, ${r("bottom")})` });
 var CONDITION_RECORD = struct("Condition", [
   u32("location", LOCATION1),
@@ -1656,41 +1938,41 @@ var CONDITION_RECORD = struct("Condition", [
   u16("unitId", UNIT),
   u8("comparison", COMPARISON),
   u8("type", CONDITION_TYPE),
-  u8("resource", perType(CONDITION_ARGS, ["cresource", "cscore", "cswitch"], "unused for this type"), "Resource, score type or switch number, per type."),
+  u8("resource", perType(CONDITION_ARGS, ["cresource", "cscore", "cswitch"], "unused for this type"), msg("Resource, score type or switch number, per type.")),
   u8("flags", flags(CONDITION_FLAG_BITS)),
-  u16("mask", HEX, "EUD mask; 0 in ordinary maps.")
-], { summary: (r, ctx) => TYPE_LOOKUP(CONDITION_ARGS, (t, c) => c.names.condition(t))(r, ctx) });
+  u16("mask", HEX, msg("EUD mask; 0 in ordinary maps."))
+], { summary: (r, ctx) => TYPE_LOOKUP(CONDITION_ARGS, (t2, c) => c.names.condition(t2))(r, ctx) });
 var actionRecord = (briefing) => struct("Action", [
   u32("location", LOCATION1),
   u32("text", STRING),
   u32("wav", STRING),
   u32("time", MS),
   u32("player", PLAYER_GROUP),
-  u32("target", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["player2", "location2", "amount", "percent", "switch", "aiScript", "cuwp", "slot"], "unused for this type"), "Second player, destination location, amount, switch, AI script or properties slot, per type."),
-  u16("unitId", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["unit", "resource", "score", "alliance"], "unused for this type"), "Unit id, resource, score type or alliance status, per type."),
+  u32("target", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["player2", "location2", "amount", "percent", "switch", "aiScript", "cuwp", "slot"], "unused for this type"), msg("Second player, destination location, amount, switch, AI script or properties slot, per type.")),
+  u16("unitId", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["unit", "resource", "score", "alliance"], "unused for this type"), msg("Unit id, resource, score type or alliance status, per type.")),
   u8("type", briefing ? BRIEFING_TYPE : ACTION_TYPE),
-  u8("modifier", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["count", "modifier", "switchAction", "unitState", "order"], "unused for this type"), "Unit count (0 = all), set/add/subtract, switch action, state or order, per type."),
+  u8("modifier", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["count", "modifier", "switchAction", "unitState", "order"], "unused for this type"), msg("Unit count (0 = all), set/add/subtract, switch action, state or order, per type.")),
   u8("flags", flags(ACTION_FLAG_BITS)),
   u8("padding", HEX),
-  u16("mask", HEX, "EUD mask; 0 in ordinary maps.")
-], { summary: (r, ctx) => TYPE_LOOKUP(briefing ? BRIEFING_ARGS : ACTION_ARGS, (t, c) => c.names.action(t, briefing))(r, ctx) });
+  u16("mask", HEX, msg("EUD mask; 0 in ordinary maps."))
+], { summary: (r, ctx) => TYPE_LOOKUP(briefing ? BRIEFING_ARGS : ACTION_ARGS, (t2, c) => c.names.action(t2, briefing))(r, ctx) });
 var triggerRecord = (briefing) => struct(briefing ? "Briefing" : "Trigger", [
   array("conditions", CONDITION_RECORD, 16, { colors: "cycle", item: (i) => `condition ${i}` }),
   array("actions", actionRecord(briefing), 64, { colors: "cycle", item: (i) => `action ${i}` }),
   u32("flags", flags(TRIGGER_FLAG_BITS)),
-  array("players", u8("runs for", BOOL), 27, { item: (i, ctx) => ctx.names.playerGroup(i), doc: "One byte per player group; non-zero means the trigger runs for that group." }),
-  u8("currentAction", NUM, "The game's bookkeeping; StarEdit writes 0.")
+  array("players", u8("runs for", BOOL), 27, { item: (i, ctx) => ctx.names.playerGroup(i), doc: msg("One byte per player group; non-zero means the trigger runs for that group.") }),
+  u8("currentAction", NUM, msg("The game's bookkeeping; StarEdit writes 0."))
 ], {
   summary: (_r, ctx, data, start) => {
     const conditions = [];
     for (let i = 0; i < 16; i++) {
-      const t = data[start + i * 20 + 15];
-      if (t) conditions.push(ctx.names.condition(t));
+      const t2 = data[start + i * 20 + 15];
+      if (t2) conditions.push(ctx.names.condition(t2));
     }
     const actions = [];
     for (let i = 0; i < 64; i++) {
-      const t = data[start + 320 + i * 32 + 26];
-      if (t) actions.push(ctx.names.action(t, briefing));
+      const t2 = data[start + 320 + i * 32 + 26];
+      if (t2) actions.push(ctx.names.action(t2, briefing));
     }
     const owners = [];
     for (let i = 0; i < 27; i++) if (data[start + 2372 + i]) owners.push(ctx.names.playerGroup(i));
@@ -1710,47 +1992,47 @@ var CUWP_RECORD = struct("Unit properties", [
   u32("unused", HEX)
 ]);
 var SECTION_DOCS = {
-  "TYPE": "The map type: RAWS for an original or hybrid map, RAWB for Brood War.",
-  "VER ": "The file format revision. Decides which settings sections the game reads.",
-  "IVER": "The StarEdit version that wrote the file (obsolete; 9 or 10). Not required.",
-  "IVE2": "The StarEdit version that wrote the file (11 for every release version).",
-  "VCOD": "The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused.",
-  "IOWN": "StarEdit's copy of the player controllers. The game reads OWNR.",
-  "OWNR": "Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026",
-  "ERA ": "The tileset, as a 16-bit value the game masks to its low three bits.",
-  "DIM ": "Map width and height in tiles.",
-  "SIDE": "The race of each of the twelve player slots.",
-  "MTXM": "The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4).",
-  "PUNI": "Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default.",
-  "UPGR": "Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them.",
-  "PTEC": "Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them.",
-  "UNIT": "Placed units, 36 bytes each, in the order they were placed.",
-  "ISOM": "The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it.",
-  "TILE": "StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it.",
-  "DD2 ": "Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2.",
-  "THG2": "Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays.",
-  "MASK": "Fog of war: one byte per cell, one bit per player 1\u20138, set where that player starts unexplored. A map without MASK is fully fogged.",
-  "STR ": "The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string.",
-  "STRx": "The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text.",
-  "UPRP": "The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number.",
-  "UPUS": "Which of the 64 CUWP slots are in use (StarEdit's bookkeeping).",
-  "MRGN": "Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere.",
-  "TRIG": "Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte.",
-  "MBRF": "Mission briefings: the same record as TRIG with briefing action types.",
-  "SPRP": "The string indices of the scenario's name and description.",
-  "FORC": "Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags.",
-  "WAV ": "The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\\u2026). Play WAV actions store the string index itself.",
-  "UNIS": "Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values.",
-  "UPGS": "Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors.",
-  "TECS": "Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs.",
-  "SWNM": "Switch names: 256 string indices, 0 for an unnamed switch.",
-  "COLR": "The colour of each of the eight playable slots, as an index into the game's colour table.",
-  "PUPx": "Upgrade restrictions, Brood War layout (61 upgrades).",
-  "PTEx": "Technology restrictions, Brood War layout (44 technologies).",
-  "UNIx": "Unit settings, Brood War layout: as UNIS with 130 weapons.",
-  "UPGx": "Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column).",
-  "TECx": "Technology settings, Brood War layout (44 technologies).",
-  "CRGB": "Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR."
+  "TYPE": msg("The map type: RAWS for an original or hybrid map, RAWB for Brood War."),
+  "VER ": msg("The file format revision. Decides which settings sections the game reads."),
+  "IVER": msg("The StarEdit version that wrote the file (obsolete; 9 or 10). Not required."),
+  "IVE2": msg("The StarEdit version that wrote the file (11 for every release version)."),
+  "VCOD": msg("The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused."),
+  "IOWN": msg("StarEdit's copy of the player controllers. The game reads OWNR."),
+  "OWNR": msg("Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026"),
+  "ERA ": msg("The tileset, as a 16-bit value the game masks to its low three bits."),
+  "DIM ": msg("Map width and height in tiles."),
+  "SIDE": msg("The race of each of the twelve player slots."),
+  "MTXM": msg("The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4)."),
+  "PUNI": msg("Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default."),
+  "UPGR": msg("Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them."),
+  "PTEC": msg("Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them."),
+  "UNIT": msg("Placed units, 36 bytes each, in the order they were placed."),
+  "ISOM": msg("The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it."),
+  "TILE": msg("StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it."),
+  "DD2 ": msg("Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2."),
+  "THG2": msg("Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays."),
+  "MASK": msg("Fog of war: one byte per cell, one bit per player 1\u20138, set where that player starts unexplored. A map without MASK is fully fogged."),
+  "STR ": msg("The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string."),
+  "STRx": msg("The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text."),
+  "UPRP": msg("The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number."),
+  "UPUS": msg("Which of the 64 CUWP slots are in use (StarEdit's bookkeeping)."),
+  "MRGN": msg("Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere."),
+  "TRIG": msg("Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte."),
+  "MBRF": msg("Mission briefings: the same record as TRIG with briefing action types."),
+  "SPRP": msg("The string indices of the scenario's name and description."),
+  "FORC": msg("Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags."),
+  "WAV ": msg("The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\\u2026). Play WAV actions store the string index itself."),
+  "UNIS": msg("Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values."),
+  "UPGS": msg("Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors."),
+  "TECS": msg("Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs."),
+  "SWNM": msg("Switch names: 256 string indices, 0 for an unnamed switch."),
+  "COLR": msg("The colour of each of the eight playable slots, as an index into the game's colour table."),
+  "PUPx": msg("Upgrade restrictions, Brood War layout (61 upgrades)."),
+  "PTEx": msg("Technology restrictions, Brood War layout (44 technologies)."),
+  "UNIx": msg("Unit settings, Brood War layout: as UNIS with 130 weapons."),
+  "UPGx": msg("Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column)."),
+  "TECx": msg("Technology settings, Brood War layout (44 technologies)."),
+  "CRGB": msg("Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR.")
 };
 var UNIT_TYPES = 228;
 var PLAYERS = 12;
@@ -1762,14 +2044,14 @@ var perWeapon = (of, label, n) => array(label, of, n, { item: (i, ctx) => ctx.na
 var cell = (i, ctx) => `(${ctx.width ? i % ctx.width : i}, ${ctx.width ? Math.floor(i / ctx.width) : 0})`;
 function unitSettings(weapons) {
   return struct("Unit settings", [
-    perUnit(u8("useDefault", BOOL), "useDefault", "1 = the game uses units.dat / weapons.dat for this type."),
-    perUnit(u32("hitPoints", FIXED256), "hitPoints", "Hit points \xD7 256."),
+    perUnit(u8("useDefault", BOOL), "useDefault", msg("1 = the game uses units.dat / weapons.dat for this type.")),
+    perUnit(u32("hitPoints", FIXED256), "hitPoints", msg("Hit points \xD7 256.")),
     perUnit(u16("shields", NUM), "shields"),
     perUnit(u8("armor", NUM), "armor"),
-    perUnit(u16("buildTime", FRAMES), "buildTime", "Game frames."),
+    perUnit(u16("buildTime", FRAMES), "buildTime", msg("Game frames.")),
     perUnit(u16("minerals", NUM), "minerals"),
     perUnit(u16("gas", NUM), "gas"),
-    perUnit(u16("name", STRING), "name", "String index of a custom name, 0 for the default."),
+    perUnit(u16("name", STRING), "name", msg("String index of a custom name, 0 for the default.")),
     perWeapon(u16("damage", NUM), "weaponDamage", weapons),
     perWeapon(u16("bonus", NUM), "weaponBonus", weapons)
   ]);
@@ -1777,7 +2059,7 @@ function unitSettings(weapons) {
 function upgradeSettings(n, pad) {
   return struct("Upgrade settings", [
     perUpgrade(u8("useDefault", BOOL), "useDefault", n),
-    ...pad ? [u8("pad", HEX, "Alignment byte.")] : [],
+    ...pad ? [u8("pad", HEX, msg("Alignment byte."))] : [],
     perUpgrade(u16("mineralBase", NUM), "mineralBase", n),
     perUpgrade(u16("mineralFactor", NUM), "mineralFactor", n),
     perUpgrade(u16("gasBase", NUM), "gasBase", n),
@@ -1943,19 +2225,19 @@ function stringTable(bytes, env, wide) {
     while (end < bytes.length && bytes[end] !== 0) end++;
     const indices = users.get(off);
     return leaf(`#${indices[0]}${indices.length > 1 ? ` (+${indices.length - 1})` : ""}`, off, Math.min(bytes.length, end + 1) - off, "chars", {
-      doc: `String index${indices.length > 1 ? "es" : ""} ${indices.join(", ")}, NUL-terminated.`,
+      doc: t("{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated.", { n: indices.length, list: indices.join(", ") }),
       semantic: { edit: "text" },
       color: blobs.indexOf(off) % 8
     });
   });
-  const strings = { label: "strings", start: blobs[0] ?? (listed + 1) * width, size: 0, type: "array", color: 0, band: 0, count: blobNodes.length, child: (i) => blobNodes[i], doc: "The text, in offset order. A blob shared by several indices is listed once." };
+  const strings = { label: "strings", start: blobs[0] ?? (listed + 1) * width, size: 0, type: "array", color: 0, band: 0, count: blobNodes.length, child: (i) => blobNodes[i], doc: msg("The text, in offset order. A blob shared by several indices is listed once.") };
   const last = blobNodes[blobNodes.length - 1];
   strings.size = last ? last.start + last.size - strings.start : 0;
   const header = instantiate(struct("header", [wide ? u32("count", NUM) : u16("count", NUM)]), 0, env, 0, 0);
   const offsets = instantiate(array("offsets", wide ? u32("offset", HEX) : u16("offset", HEX), listed, {
     item: (i) => `#${i + 1}`,
     colors: "alternate",
-    doc: "Byte offset of each string from the start of the section; index 0 has no entry."
+    doc: msg("Byte offset of each string from the start of the section; index 0 has no entry.")
   }), width, env, 1, 0);
   offsets.child = /* @__PURE__ */ ((inner) => (i) => {
     const n = inner(i);
@@ -1989,7 +2271,7 @@ function sectionLayout(name, bytes, ctx) {
   }
   root.doc = root.doc ?? SECTION_DOCS[name];
   if (root.size < bytes.length) {
-    const rest = leaf("trailing bytes", root.size, bytes.length - root.size, "bytes", { doc: "Bytes past the end of the layout. The game ignores what it does not read.", color: 7 });
+    const rest = leaf("trailing bytes", root.size, bytes.length - root.size, "bytes", { doc: msg("Bytes past the end of the layout. The game ignores what it does not read."), color: 7 });
     const seq = sequence(root.label, [root, rest], root.doc);
     return seq;
   }
@@ -2013,25 +2295,30 @@ function knownLayouts() {
 
 // plugin.ts
 function activate(api) {
+  api.i18n.register({ ko: KO });
+  bindLanguage(api);
   let explorer = null;
   const open = () => {
     if (!api.document.isOpen()) {
-      api.ui.status("Section Explorer: open a map first.");
+      api.ui.status(t("Section Explorer: open a map first."));
       return;
     }
     if (explorer?.isOpen()) return;
     explorer = new Explorer(api);
     explorer.open();
   };
-  api.commands.register({ id: "open", title: "Section Explorer\u2026", enabled: () => api.document.isOpen(), run: open });
-  api.menu.add("Tools", { label: "Section Explorer\u2026", shortcut: "Ctrl+Shift+H", enabled: () => api.document.isOpen(), command: "open" });
+  api.commands.register({ id: "open", title: msg("Section Explorer\u2026"), enabled: () => api.document.isOpen(), run: open });
+  api.menu.add("Tools", { label: msg("Section Explorer\u2026"), shortcut: "Ctrl+Shift+H", enabled: () => api.document.isOpen(), command: "open" });
   api.hotkeys.add("Ctrl+Shift+H", { command: "open" });
+  api.events.on("language", () => explorer?.relabel());
   return () => {
     explorer?.close();
   };
 }
 var fmt = (n) => n.toLocaleString();
 var hex = (n) => `0x${n.toString(16)}`;
+var thing = (kind, n) => kind === "unit" ? t("unit {n}", { n }) : kind === "sprite" ? t("sprite {n}", { n }) : t("location {n}", { n });
+var parserSaid = (warnings) => warnings.length ? ` ${t("The parser said: {warnings}", { warnings: warnings.join(" ") })}` : "";
 var Explorer = class _Explorer {
   handle = null;
   infos = [];
@@ -2056,6 +2343,8 @@ var Explorer = class _Explorer {
   closeArmed = false;
   pickingFromInspector = false;
   disposers = [];
+  /** Unapplied edits carried across a rebuild of the dialog (a language change). */
+  carry = null;
   api;
   constructor(api) {
     this.api = api;
@@ -2066,23 +2355,30 @@ var Explorer = class _Explorer {
   close() {
     this.handle?.close();
   }
+  /** Build the dialog again in the new language, keeping the section and the unapplied edits. */
+  relabel() {
+    if (!this.isOpen()) return;
+    this.carry = { buffers: new Map(this.buffers), selected: this.selected };
+    this.handle?.close();
+    this.open();
+  }
   open() {
     this.handle = this.api.ui.dialog({
-      title: "Section Explorer",
+      title: t("Section Explorer"),
       size: "full",
       tall: true,
       mount: (body, handle) => this.mount(body, handle),
       buttons: [
-        { label: "Apply", primary: true, closes: false, run: () => {
+        { label: t("Apply"), primary: true, closes: false, run: () => {
           this.apply();
           return false;
         } },
-        { label: "Close", run: () => this.tryClose() }
+        { label: t("Close"), run: () => this.tryClose() }
       ],
       onPaste: (transfer) => {
         if (!transfer.text || this.selected < 0) return;
         const n = this.hex.paste(transfer.text);
-        this.status(n ? `Pasted ${n} byte${n === 1 ? "" : "s"}.` : "Nothing to paste \u2014 hex digits in the byte column, text in the text column.");
+        this.status(n ? t("Pasted {n, plural, one {# byte} other {# bytes}}.", { n }) : t("Nothing to paste \u2014 hex digits in the byte column, text in the text column."));
       }
     });
   }
@@ -2090,7 +2386,7 @@ var Explorer = class _Explorer {
     const pending = [...this.buffers.values()].filter((b) => b.modified).length;
     if (pending === 0 || this.closeArmed) return true;
     this.closeArmed = true;
-    this.status(`${pending} section${pending === 1 ? " has" : "s have"} changes you have not applied \u2014 Apply, Revert, or press Close again to drop them.`);
+    this.status(t("{n, plural, one {# section has} other {# sections have}} changes you have not applied \u2014 Apply, Revert, or press Close again to drop them.", { n: pending }));
     return false;
   }
   /* ── Mount ────────────────────────────────────────────── */
@@ -2099,37 +2395,37 @@ var Explorer = class _Explorer {
     const root = h("div", { className: "sx" });
     root.append(h("style", null, STYLE));
     this.summary = h("span", { className: "sx-dim" });
-    this.undoBtn = h("button", { className: "sx-btn small", title: "Undo (Ctrl+Z in the hex view)", onclick: () => this.buffer()?.undo() }, "Undo");
-    this.redoBtn = h("button", { className: "sx-btn small", title: "Redo (Ctrl+Y)", onclick: () => this.buffer()?.redo() }, "Redo");
-    this.insertTick = h("input", { type: "checkbox", title: "Insert mode: typed and pasted bytes are inserted rather than overwritten; Delete removes bytes. Also the Insert key." });
+    this.undoBtn = h("button", { className: "sx-btn small", title: t("Undo (Ctrl+Z in the hex view)"), onclick: () => this.buffer()?.undo() }, t("Undo"));
+    this.redoBtn = h("button", { className: "sx-btn small", title: t("Redo (Ctrl+Y)"), onclick: () => this.buffer()?.redo() }, t("Redo"));
+    this.insertTick = h("input", { type: "checkbox", title: t("Insert mode: typed and pasted bytes are inserted rather than overwritten; Delete removes bytes. Also the Insert key.") });
     this.insertTick.addEventListener("change", () => {
       this.hex.insertMode = this.insertTick.checked;
       this.updateStatus();
     });
-    this.applyBtn = h("button", { className: "sx-btn primary small", title: "Write every changed section into the map", onclick: () => this.apply() }, "Apply");
-    this.revertBtn = h("button", { className: "sx-btn small", title: "Drop every change and read the sections again", onclick: () => this.reload("revert") }, "Revert");
+    this.applyBtn = h("button", { className: "sx-btn primary small", title: t("Write every changed section into the map"), onclick: () => this.apply() }, t("Apply"));
+    this.revertBtn = h("button", { className: "sx-btn small", title: t("Drop every change and read the sections again"), onclick: () => this.reload("revert") }, t("Revert"));
     const bar = h(
       "div",
       { className: "sx-bar" },
       this.summary,
       h("span", { className: "sx-grow" }),
-      h("button", { className: "sx-btn small", title: "Download the scenario file as Save would write it (scenario.chk, no archive)", onclick: () => this.exportFile() }, "Export .chk"),
-      h("button", { className: "sx-btn small", title: "Replace the whole scenario with a .chk file", onclick: () => void this.importFile() }, "Import .chk\u2026"),
+      h("button", { className: "sx-btn small", title: t("Download the scenario file as Save would write it (scenario.chk, no archive)"), onclick: () => this.exportFile() }, t("Export .chk")),
+      h("button", { className: "sx-btn small", title: t("Replace the whole scenario with a .chk file"), onclick: () => void this.importFile() }, t("Import .chk\u2026")),
       h("span", { className: "sx-sep" }),
       this.undoBtn,
       this.redoBtn,
       h("span", { className: "sx-sep" }),
-      h("label", { className: "sx-check" }, this.insertTick, "Insert mode"),
+      h("label", { className: "sx-check" }, this.insertTick, t("Insert mode")),
       h("span", { className: "sx-sep" }),
       this.revertBtn,
       this.applyBtn
     );
-    this.filter = h("input", { type: "text", placeholder: "filter", spellcheck: false, style: "width: 90px" });
+    this.filter = h("input", { type: "text", placeholder: t("filter"), spellcheck: false, style: "width: 90px" });
     this.filter.addEventListener("input", () => this.renderList());
     this.filter.addEventListener("keydown", (e) => e.stopPropagation());
     this.listBody = h("div", { className: "sx-pane-body sx-sections" });
     this.listFoot = h("div", { className: "sx-pane-foot" });
-    const sections = h("div", { className: "sx-pane" }, h("div", { className: "sx-pane-head" }, h("b", null, "Sections"), h("span", { className: "sx-grow" }), this.filter), this.listBody, this.listFoot);
+    const sections = h("div", { className: "sx-pane" }, h("div", { className: "sx-pane-head" }, h("b", null, t("Sections")), h("span", { className: "sx-grow" }), this.filter), this.listBody, this.listFoot);
     this.hex = new HexView({
       buffer: () => this.buffer() ?? new EditBuffer(new Uint8Array(0)),
       layout: () => this.layout(),
@@ -2187,9 +2483,16 @@ var Explorer = class _Explorer {
     });
     this.disposers.push(() => events.dispose(), () => this.hex.dispose());
     this.reload("open");
-    const remembered = this.api.storage.get("lastSection", null);
-    const first = remembered ? this.infos.findIndex((s) => s.name === remembered) : -1;
-    this.select(first >= 0 ? first : this.infos.length ? 0 : -1);
+    const carried = this.carry;
+    this.carry = null;
+    if (carried && carried.selected < this.infos.length) {
+      for (const [index, buf] of carried.buffers) if (index < this.infos.length) this.buffers.set(index, buf);
+      this.select(carried.selected);
+    } else {
+      const remembered = this.api.storage.get("lastSection", null);
+      const first = remembered ? this.infos.findIndex((s) => s.name === remembered) : -1;
+      this.select(first >= 0 ? first : this.infos.length ? 0 : -1);
+    }
     return () => {
       for (const d of this.disposers.splice(0)) d();
       this.handle = null;
@@ -2213,7 +2516,7 @@ var Explorer = class _Explorer {
     return root;
   }
   status(text) {
-    this.api.ui.status(`Section Explorer: ${text}`);
+    this.api.ui.status(t("Section Explorer: {text}", { text }));
   }
   /** Read the section list again from the document (after Apply, Revert, a structural edit, or a map change). */
   reload(reason) {
@@ -2222,7 +2525,7 @@ var Explorer = class _Explorer {
     this.buffers.clear();
     this.layoutFor = null;
     this.closeArmed = false;
-    if (reason === "revert") this.status("Reverted \u2014 every section read again from the map.");
+    if (reason === "revert") this.status(t("Reverted \u2014 every section read again from the map."));
     this.renderSummary();
     this.renderList();
     if (this.infos.length === 0) {
@@ -2291,10 +2594,10 @@ var Explorer = class _Explorer {
     const unknown = this.infos.filter((s) => !s.spec).length;
     clear(this.summary);
     this.summary.append(
-      h("b", { className: "sx-gold" }, info?.name || "Untitled"),
-      ` \u2014 ${fmt(total)} bytes, ${this.infos.length} sections`,
-      repeats ? `, ${repeats} repeated` : "",
-      unknown ? `, ${unknown} unknown` : "",
+      h("b", { className: "sx-gold" }, info?.name || t("Untitled")),
+      ` \u2014 ${t("{bytes} bytes, {n, plural, one {# section} other {# sections}}", { bytes: fmt(total), n: this.infos.length })}`,
+      repeats ? `, ${t("{n} repeated", { n: repeats })}` : "",
+      unknown ? `, ${t("{n} unknown", { n: unknown })}` : "",
       info?.fileName ? h("span", { className: "sx-faint" }, ` \xB7 ${info.fileName}`) : ""
     );
   }
@@ -2302,21 +2605,21 @@ var Explorer = class _Explorer {
     clear(this.listBody);
     const q = this.filter.value.trim().toLowerCase();
     for (const s of this.infos) {
-      const what = s.spec?.what ?? "unknown section";
+      const what = s.spec?.what ?? t("unknown section");
       if (q && !s.name.toLowerCase().includes(q) && !what.toLowerCase().includes(q)) continue;
       const buf = this.buffers.get(s.index);
       const badges = h("span", { className: "sx-badges" });
-      if (!s.spec) badges.append(h("span", { className: "sx-badge unknown", title: "The editor knows nothing about this section" }, "?"));
-      else if (!s.spec.modelled) badges.append(h("span", { className: "sx-badge raw", title: "Kept as bytes and written back unchanged" }, "raw"));
-      if (s.dirty) badges.append(h("span", { className: "sx-badge dirty", title: "The editor has unsaved changes that will be encoded here on Save" }, "unsaved"));
-      if (buf?.modified) badges.append(h("span", { className: "sx-badge edited", title: "Changed here and not yet applied" }, "edited"));
-      if (s.occurrences > 1) badges.append(h("span", { className: "sx-badge repeat", title: `Occurrence ${s.occurrence + 1} of ${s.occurrences}; the game combines them (${s.spec?.mode ?? "last wins"})` }, `${s.occurrence + 1}/${s.occurrences}`));
+      if (!s.spec) badges.append(h("span", { className: "sx-badge unknown", title: t("The editor knows nothing about this section") }, "?"));
+      else if (!s.spec.modelled) badges.append(h("span", { className: "sx-badge raw", title: t("Kept as bytes and written back unchanged") }, t("raw")));
+      if (s.dirty) badges.append(h("span", { className: "sx-badge dirty", title: t("The editor has unsaved changes that will be encoded here on Save") }, t("unsaved")));
+      if (buf?.modified) badges.append(h("span", { className: "sx-badge edited", title: t("Changed here and not yet applied") }, t("edited")));
+      if (s.occurrences > 1) badges.append(h("span", { className: "sx-badge repeat", title: t("Occurrence {n} of {count}; the game combines them ({mode})", { n: s.occurrence + 1, count: s.occurrences, mode: s.spec?.mode ?? t("last wins") }) }, `${s.occurrence + 1}/${s.occurrences}`));
       const expected = s.spec?.size ?? null;
-      if (s.truncated) badges.append(h("span", { className: "sx-badge warn", title: `Declares ${s.declaredSize} bytes but the file ended early` }, "cut"));
-      else if (expected !== null && expected !== (buf?.length ?? s.size)) badges.append(h("span", { className: "sx-badge warn", title: `The game reads ${fmt(expected)} bytes here` }, "size"));
+      if (s.truncated) badges.append(h("span", { className: "sx-badge warn", title: t("Declares {n} bytes but the file ended early", { n: s.declaredSize }) }, t("cut")));
+      else if (expected !== null && expected !== (buf?.length ?? s.size)) badges.append(h("span", { className: "sx-badge warn", title: t("The game reads {n} bytes here", { n: fmt(expected) }) }, t("size")));
       const row = h(
         "div",
-        { className: `sx-row${s.index === this.selected ? " on" : ""}`, title: `${s.name} at ${hex(s.offset)} \u2014 ${what}` },
+        { className: `sx-row${s.index === this.selected ? " on" : ""}`, title: t("{name} at {offset} \u2014 {what}", { name: s.name, offset: hex(s.offset), what }) },
         h("span", { className: "sx-name" }, s.name),
         h("span", { className: "sx-what" }, what, badges),
         h("span", { className: "sx-size" }, fmt(buf?.length ?? s.size))
@@ -2334,15 +2637,15 @@ var Explorer = class _Explorer {
     const has = this.selected >= 0;
     const btn = (label, title, run, enabled = true) => h("button", { className: "sx-btn small", title, disabled: !enabled, onclick: run }, label);
     this.listFoot.append(
-      btn("Add\u2026", "Insert a new section", () => this.addForm()),
-      btn("Remove", "Remove this occurrence from the file", () => {
+      btn(t("Add\u2026"), t("Insert a new section"), () => this.addForm()),
+      btn(t("Remove"), t("Remove this occurrence from the file"), () => {
         void this.confirmRemove();
       }, has),
-      btn("Rename\u2026", "Change the four-character name", () => this.renameForm(this.selected), has),
-      btn("\u2191", "Move up", () => this.structural(() => this.api.document.sections.move(this.selected, this.selected - 1), "Moved.", -1), has && this.selected > 0),
-      btn("\u2193", "Move down", () => this.structural(() => this.api.document.sections.move(this.selected, this.selected + 1), "Moved.", 1), has && this.selected < this.infos.length - 1),
-      btn("Export", "Download this section's bytes", () => this.exportSection(), has),
-      btn("Import\u2026", "Replace this section's bytes with a file's (then Apply)", () => void this.importSection(), has)
+      btn(t("Rename\u2026"), t("Change the four-character name"), () => this.renameForm(this.selected), has),
+      btn("\u2191", t("Move up"), () => this.structural(() => this.api.document.sections.move(this.selected, this.selected - 1), t("Moved."), -1), has && this.selected > 0),
+      btn("\u2193", t("Move down"), () => this.structural(() => this.api.document.sections.move(this.selected, this.selected + 1), t("Moved."), 1), has && this.selected < this.infos.length - 1),
+      btn(t("Export"), t("Download this section's bytes"), () => this.exportSection(), has),
+      btn(t("Import\u2026"), t("Replace this section's bytes with a file's (then Apply)"), () => void this.importSection(), has)
     );
   }
   renderHeader() {
@@ -2355,13 +2658,13 @@ var Explorer = class _Explorer {
     const ctx = this.ctx();
     this.insp.setHeader({
       name: s.name,
-      what: s.spec?.what ?? "unknown section",
-      doc: SECTION_DOCS[s.name] ?? null,
+      what: s.spec?.what ?? t("unknown section"),
+      doc: SECTION_DOCS[s.name] ? translate(SECTION_DOCS[s.name]) : null,
       size: buf.length,
       expected: s.spec?.size ?? expectedSize(s.name, ctx),
       recordSize: recordSize(s.name),
-      mode: s.spec ? `${s.spec.mode} on repeat` : "unknown",
-      occurrence: s.occurrences > 1 ? `occurrence ${s.occurrence + 1} of ${s.occurrences}` : null,
+      mode: s.spec ? t("{mode} on repeat", { mode: s.spec.mode }) : t("unknown"),
+      occurrence: s.occurrences > 1 ? t("occurrence {n} of {count}", { n: s.occurrence + 1, count: s.occurrences }) : null,
       modelled: s.spec?.modelled ?? false,
       dirty: s.dirty
     });
@@ -2373,60 +2676,60 @@ var Explorer = class _Explorer {
     const s = this.infos[this.selected];
     const buf = this.buffer();
     if (!s || !buf) {
-      this.hexHead.append(h("b", null, "Bytes"));
+      this.hexHead.append(h("b", null, t("Bytes")));
       return;
     }
-    this.hexHead.append(h("b", { className: "sx-mono" }, s.name), h("span", { className: "sx-dim" }, ` at ${hex(s.offset)}`), h("span", { className: "sx-grow" }));
+    this.hexHead.append(h("b", { className: "sx-mono" }, s.name), h("span", { className: "sx-dim" }, ` ${t("at {offset}", { offset: hex(s.offset) })}`), h("span", { className: "sx-grow" }));
     const stride = recordSize(s.name);
     if (stride) {
       const at = () => Math.floor(this.hex.cursor / stride) * stride;
       this.hexHead.append(
-        h("button", { className: "sx-btn small", title: `Insert a blank ${stride}-byte record before the one under the cursor`, onclick: () => {
+        h("button", { className: "sx-btn small", title: t("Insert a blank {n}-byte record before the one under the cursor", { n: stride }), onclick: () => {
           const b = this.buffer();
           if (!b) return;
           const where = b.length ? at() : 0;
           b.insert(where, blankRecord(s.name));
           this.hex.setCursor(where);
-          this.status(`Inserted a blank record at ${hex(where)}.`);
-        } }, "Insert record"),
-        h("button", { className: "sx-btn small", title: "Append a blank record at the end", onclick: () => {
+          this.status(t("Inserted a blank record at {offset}.", { offset: hex(where) }));
+        } }, t("Insert record")),
+        h("button", { className: "sx-btn small", title: t("Append a blank record at the end"), onclick: () => {
           const b = this.buffer();
           if (!b) return;
           const where = b.length;
           b.insert(where, blankRecord(s.name));
           this.hex.setCursor(where);
-        } }, "Append"),
-        h("button", { className: "sx-btn small", title: "Remove the record under the cursor", onclick: () => {
+        } }, t("Append")),
+        h("button", { className: "sx-btn small", title: t("Remove the record under the cursor"), onclick: () => {
           const b = this.buffer();
           if (!b || b.length < stride) return;
           const where = at();
           b.remove(where, stride);
           this.hex.setCursor(Math.min(where, Math.max(0, b.length - 1)));
-          this.status(`Removed the record at ${hex(where)}.`);
-        } }, "Delete record")
+          this.status(t("Removed the record at {offset}.", { offset: hex(where) }));
+        } }, t("Delete record"))
       );
       const kind = _Explorer.GO_TO[s.name];
       if (kind) {
         const index = Math.floor(this.hex.cursor / stride);
         this.hexHead.append(h("button", {
           className: "sx-btn small",
-          title: `Scroll the map to ${kind} ${index} and select it`,
+          title: t("Scroll the map to {target} and select it", { target: thing(kind, index) }),
           onclick: () => {
             this.api.view.goTo({ kind, index });
-            this.status(`Went to ${kind} ${index}.`);
+            this.status(t("Went to {target}.", { target: thing(kind, index) }));
           }
-        }, "Show on map"));
+        }, t("Show on map")));
       }
     } else {
       const expected = s.spec?.size ?? expectedSize(s.name, this.ctx());
       if (expected !== null && expected !== buf.length) {
-        this.hexHead.append(h("button", { className: "sx-btn small", title: `Pad with zeros or cut to ${fmt(expected)} bytes`, onclick: () => {
+        this.hexHead.append(h("button", { className: "sx-btn small", title: t("Pad with zeros or cut to {n} bytes", { n: fmt(expected) }), onclick: () => {
           this.buffer()?.resize(expected);
-          this.status(`Resized to ${fmt(expected)} bytes.`);
-        } }, `Fit to ${fmt(expected)}`));
+          this.status(t("Resized to {n} bytes.", { n: fmt(expected) }));
+        } }, t("Fit to {n}", { n: fmt(expected) })));
       }
     }
-    const sizeBox = h("input", { type: "text", value: String(buf.length), style: "width: 70px", title: "Set the section's length (zero-padded or cut); Enter applies" });
+    const sizeBox = h("input", { type: "text", value: String(buf.length), style: "width: 70px", title: t("Set the section's length (zero-padded or cut); Enter applies") });
     sizeBox.addEventListener("keydown", (e) => {
       e.stopPropagation();
       if (e.key === "Enter") {
@@ -2437,7 +2740,7 @@ var Explorer = class _Explorer {
         } else sizeBox.value = String(this.buffer()?.length ?? 0);
       }
     });
-    this.hexHead.append(h("span", { className: "sx-dim", style: "font-size:11px" }, "length"), sizeBox);
+    this.hexHead.append(h("span", { className: "sx-dim", style: "font-size:11px" }, t("length")), sizeBox);
   }
   updateStatus() {
     clear(this.statusLine);
@@ -2446,25 +2749,25 @@ var Explorer = class _Explorer {
     const sel = this.hex.selection;
     const piece = (k, v) => h("span", null, `${k} `, h("span", { className: "sx-mono" }, v));
     this.statusLine.append(
-      piece("offset", `${hex(this.hex.cursor)} (${this.hex.cursor})`),
-      sel ? piece("selected", `${hex(sel.from)}\u2013${hex(sel.to - 1)} (${fmt(sel.to - sel.from)})`) : "",
-      piece("typing in", this.hex.column === "hex" ? "hex" : "text"),
-      piece("mode", this.hex.insertMode ? "insert" : "overwrite"),
-      buf.modified ? h("span", { className: "sx-teal" }, "changed \u2014 not applied") : h("span", { className: "sx-faint" }, "unchanged")
+      piece(t("offset"), `${hex(this.hex.cursor)} (${this.hex.cursor})`),
+      sel ? piece(t("selected"), `${hex(sel.from)}\u2013${hex(sel.to - 1)} (${fmt(sel.to - sel.from)})`) : "",
+      piece(t("typing in"), this.hex.column === "hex" ? t("hex") : t("text")),
+      piece(t("mode"), this.hex.insertMode ? t("insert") : t("overwrite")),
+      buf.modified ? h("span", { className: "sx-teal" }, t("changed \u2014 not applied")) : h("span", { className: "sx-faint" }, t("unchanged"))
     );
     this.undoBtn.disabled = !buf.canUndo;
     this.redoBtn.disabled = !buf.canRedo;
     const pending = [...this.buffers.values()].some((b) => b.modified);
     this.applyBtn.disabled = !pending;
     this.revertBtn.disabled = !pending;
-    this.applyBtn.textContent = pending ? `Apply (${[...this.buffers.values()].filter((b) => b.modified).length})` : "Apply";
+    this.applyBtn.textContent = pending ? t("Apply ({n})", { n: [...this.buffers.values()].filter((b) => b.modified).length }) : t("Apply");
   }
   /* ── Applying ─────────────────────────────────────────── */
   /** Write every changed buffer into the map. Sections keep their indices across writes, so the order is free. */
   apply() {
     const changed = [...this.buffers.entries()].filter(([, b]) => b.modified);
     if (changed.length === 0) {
-      this.status("Nothing to apply.");
+      this.status(t("Nothing to apply."));
       return 0;
     }
     this.applying = true;
@@ -2475,13 +2778,13 @@ var Explorer = class _Explorer {
         warnings.push(...r.warnings);
       }
     } catch (err) {
-      this.status(`Apply failed: ${err instanceof Error ? err.message : String(err)}`);
+      this.status(t("Apply failed: {error}", { error: err instanceof Error ? err.message : String(err) }));
       this.applying = false;
       return 0;
     }
     this.applying = false;
     this.reload("structure");
-    this.status(`Applied ${changed.length} section${changed.length === 1 ? "" : "s"}.${warnings.length ? ` The parser said: ${warnings.join(" ")}` : ""}`);
+    this.status(`${t("Applied {n, plural, one {# section} other {# sections}}.", { n: changed.length })}${parserSaid(warnings)}`);
     return changed.length;
   }
   /**
@@ -2492,20 +2795,16 @@ var Explorer = class _Explorer {
   async confirmRemove() {
     const s = this.infos[this.selected];
     if (!s) return;
-    const modelled = s.spec?.modelled ? "The editor models this section: removing it changes what the map is." : "";
+    const modelled = s.spec?.modelled ? t("The editor models this section: removing it changes what the map is.") : "";
     const ok = await this.api.ui.confirm(
-      `Remove ${s.name} (${fmt(s.size)} bytes) from the file?
-
-${modelled}
-
-This rewrites the map and clears the undo history \u2014 there is no taking it back.`.replace(/\n{3,}/g, "\n\n"),
-      { title: `Remove ${s.name}`, confirmLabel: "Remove", danger: true }
+      [t("Remove {name} ({n} bytes) from the file?", { name: s.name, n: fmt(s.size) }), modelled, t("This rewrites the map and clears the undo history \u2014 there is no taking it back.")].filter(Boolean).join("\n\n"),
+      { title: t("Remove {name}", { name: s.name }), confirmLabel: t("Remove"), danger: true }
     );
     if (!ok) {
-      this.status("Kept the section.");
+      this.status(t("Kept the section."));
       return;
     }
-    this.structural(() => this.api.document.sections.remove(this.selected), "Removed the section.");
+    this.structural(() => this.api.document.sections.remove(this.selected), t("Removed the section."));
   }
   /** A structural edit: pending changes go in first, then the operation, then everything is read again. */
   structural(op, done, moves = 0) {
@@ -2518,11 +2817,11 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
       this.applying = false;
       this.selected = Math.max(0, before + moves);
       this.reload("structure");
-      this.status(`${done}${r.warnings.length ? ` The parser said: ${r.warnings.join(" ")}` : ""}`);
+      this.status(`${done}${parserSaid(r.warnings)}`);
     } catch (err) {
       this.applying = false;
       this.reload("structure");
-      this.status(`Failed: ${err instanceof Error ? err.message : String(err)}`);
+      this.status(t("Failed: {error}", { error: err instanceof Error ? err.message : String(err) }));
     }
   }
   /* ── Forms ────────────────────────────────────────────── */
@@ -2539,12 +2838,12 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
     this.form((close) => {
       const known = knownLayouts().concat(this.api.document.sections.known().map((k) => k.name).filter((n) => !(n in SECTION_DOCS)));
       const pick = h("select");
-      pick.append(h("option", { value: "" }, "custom name\u2026"));
-      for (const n of known) pick.append(h("option", { value: n }, `${n.trimEnd()} \u2014 ${this.api.document.sections.spec(n)?.what ?? SECTION_DOCS[n]?.slice(0, 40) ?? ""}`));
+      pick.append(h("option", { value: "" }, t("custom name\u2026")));
+      for (const n of known) pick.append(h("option", { value: n }, `${n.trimEnd()} \u2014 ${this.api.document.sections.spec(n)?.what ?? (SECTION_DOCS[n] ? translate(SECTION_DOCS[n]).slice(0, 40) : "")}`));
       const name = h("input", { type: "text", maxlength: 4, placeholder: "NAME", spellcheck: false, style: "width: 64px" });
       const size = h("input", { type: "text", value: "0", style: "width: 80px" });
-      const where = h("select", null, h("option", { value: "end" }, "at the end"), h("option", { value: "before" }, "before the selected one"), h("option", { value: "after" }, "after the selected one"));
-      const fill = h("select", null, h("option", { value: "zero" }, "zeros"), h("option", { value: "game" }, "what the game reads now (repeats combined)"));
+      const where = h("select", null, h("option", { value: "end" }, t("at the end")), h("option", { value: "before" }, t("before the selected one")), h("option", { value: "after" }, t("after the selected one")));
+      const fill = h("select", null, h("option", { value: "zero" }, t("zeros")), h("option", { value: "game" }, t("what the game reads now (repeats combined)")));
       pick.addEventListener("change", () => {
         if (!pick.value) return;
         name.value = pick.value;
@@ -2557,7 +2856,7 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
       const insert = () => {
         const n = name.value.padEnd(4, " ");
         if (n.trim().length === 0 || n.length > 4) {
-          this.status("A section name is one to four characters.");
+          this.status(t("A section name is one to four characters."));
           return;
         }
         let bytes;
@@ -2565,24 +2864,24 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
         else {
           const len = Number(size.value);
           if (!Number.isInteger(len) || len < 0) {
-            this.status("The size is a whole number of bytes.");
+            this.status(t("The size is a whole number of bytes."));
             return;
           }
           bytes = new Uint8Array(len);
         }
         const at = where.value === "end" || this.selected < 0 ? this.infos.length : where.value === "before" ? this.selected : this.selected + 1;
         close();
-        this.structural(() => this.api.document.sections.insert(at, n, bytes), `Added ${n.trimEnd()} (${fmt(bytes.length)} bytes).`, at - this.selected);
+        this.structural(() => this.api.document.sections.insert(at, n, bytes), t("Added {name} ({n} bytes).", { name: n.trimEnd(), n: fmt(bytes.length) }), at - this.selected);
       };
       return h(
         "div",
         null,
-        h("div", { className: "sx-frow" }, h("label", null, "section"), pick),
-        h("div", { className: "sx-frow" }, h("label", null, "name"), name),
-        h("div", { className: "sx-frow" }, h("label", null, "size"), size),
-        h("div", { className: "sx-frow" }, h("label", null, "contents"), fill),
-        h("div", { className: "sx-frow" }, h("label", null, "position"), where),
-        h("div", { className: "sx-bar" }, h("button", { className: "sx-btn small primary", onclick: insert }, "Add"), h("button", { className: "sx-btn small", onclick: close }, "Cancel"))
+        h("div", { className: "sx-frow" }, h("label", null, t("section")), pick),
+        h("div", { className: "sx-frow" }, h("label", null, t("name")), name),
+        h("div", { className: "sx-frow" }, h("label", null, t("size")), size),
+        h("div", { className: "sx-frow" }, h("label", null, t("contents")), fill),
+        h("div", { className: "sx-frow" }, h("label", null, t("position")), where),
+        h("div", { className: "sx-bar" }, h("button", { className: "sx-btn small primary", onclick: insert }, t("Add")), h("button", { className: "sx-btn small", onclick: close }, t("Cancel")))
       );
     });
   }
@@ -2602,18 +2901,18 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
       const go = () => {
         const n = name.value;
         if (n.trim().length === 0 || n.length > 4) {
-          this.status("A section name is one to four characters.");
+          this.status(t("A section name is one to four characters."));
           return;
         }
         close();
         this.selected = index;
-        this.structural(() => this.api.document.sections.rename(index, n), `Renamed to ${n.padEnd(4, " ").trimEnd()}.`);
+        this.structural(() => this.api.document.sections.rename(index, n), t("Renamed to {name}.", { name: n.padEnd(4, " ").trimEnd() }));
       };
       return h(
         "div",
         null,
-        h("div", { className: "sx-frow" }, h("label", null, "rename"), name),
-        h("div", { className: "sx-bar" }, h("button", { className: "sx-btn small primary", onclick: go }, "Rename"), h("button", { className: "sx-btn small", onclick: close }, "Cancel"))
+        h("div", { className: "sx-frow" }, h("label", null, t("rename")), name),
+        h("div", { className: "sx-bar" }, h("button", { className: "sx-btn small primary", onclick: go }, t("Rename")), h("button", { className: "sx-btn small", onclick: close }, t("Cancel")))
       );
     });
   }
@@ -2631,7 +2930,7 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
     const buf = this.buffer();
     if (!s || !buf) return;
     this.download(buf.bytes, `${s.name.trim() || "section"}${s.occurrences > 1 ? `-${s.occurrence + 1}` : ""}.bin`);
-    this.status(`Exported ${fmt(buf.length)} bytes.`);
+    this.status(t("Exported {n} bytes.", { n: fmt(buf.length) }));
   }
   async importSection() {
     const buf = this.buffer();
@@ -2640,13 +2939,13 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
     if (!file) return;
     buf.replace(new Uint8Array(await file.arrayBuffer()));
     this.hex.setCursor(0);
-    this.status(`Read ${fmt(buf.length)} bytes from ${file.name} \u2014 Apply to keep them.`);
+    this.status(t("Read {n} bytes from {file} \u2014 Apply to keep them.", { n: fmt(buf.length), file: file.name }));
   }
   exportFile() {
     const info = this.api.document.info();
     const bytes = this.api.document.sections.file();
     this.download(bytes, `${(info?.fileName ?? info?.name ?? "scenario").replace(/\.(scx|scm|chk)$/i, "")}.chk`);
-    this.status(`Exported ${fmt(bytes.length)} bytes.`);
+    this.status(t("Exported {n} bytes.", { n: fmt(bytes.length) }));
   }
   async importFile() {
     const [file] = await this.api.ui.pickFiles({ accept: ".chk" });
@@ -2658,10 +2957,10 @@ This rewrites the map and clears the undo history \u2014 there is no taking it b
       this.applying = false;
       this.selected = 0;
       this.reload("structure");
-      this.status(`Replaced the scenario with ${file.name}.${r.warnings.length ? ` The parser said: ${r.warnings.join(" ")}` : ""}`);
+      this.status(`${t("Replaced the scenario with {file}.", { file: file.name })}${parserSaid(r.warnings)}`);
     } catch (err) {
       this.applying = false;
-      this.status(`Could not read ${file.name}: ${err instanceof Error ? err.message : String(err)}`);
+      this.status(t("Could not read {file}: {error}", { file: file.name, error: err instanceof Error ? err.message : String(err) }));
     }
   }
 };

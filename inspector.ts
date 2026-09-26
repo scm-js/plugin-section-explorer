@@ -9,6 +9,7 @@
  */
 import { findBytes, latin1, parseHex, type EditBuffer } from "./buffer";
 import { clear, h } from "./dom";
+import { t, translate } from "./i18n";
 import { describe, leafAt, pathAt, readChars, readPrim, siblingsOf, writePrim, PRIM_RANGE, type Ctx, type Node, type Prim } from "./layout";
 
 const PAGE = 64;
@@ -61,14 +62,14 @@ export class Inspector {
     this.host = host;
     this.doc = h("div", { className: "sx-doc" });
     this.hoverLine = h("div", { className: "sx-hint" });
-    this.findBox = h("input", { type: "text", placeholder: "find hex or text", spellcheck: false }) as HTMLInputElement;
-    this.findMode = h("select", null, h("option", { value: "hex" }, "hex"), h("option", { value: "text" }, "text"), h("option", { value: "u16" }, "u16"), h("option", { value: "u32" }, "u32")) as HTMLSelectElement;
-    this.gotoBox = h("input", { type: "text", placeholder: "go to 0x…", spellcheck: false, style: "width: 78px; flex: none" }) as HTMLInputElement;
+    this.findBox = h("input", { type: "text", placeholder: t("find hex or text"), spellcheck: false }) as HTMLInputElement;
+    this.findMode = h("select", null, h("option", { value: "hex" }, t("hex")), h("option", { value: "text" }, t("text")), h("option", { value: "u16" }, "u16"), h("option", { value: "u32" }, "u32")) as HTMLSelectElement;
+    this.gotoBox = h("input", { type: "text", placeholder: t("go to 0x…"), spellcheck: false, style: "width: 78px; flex: none" }) as HTMLInputElement;
     this.findBox.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); this.find(e.shiftKey ? -1 : 1); } e.stopPropagation(); });
     this.gotoBox.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); this.goto(); } e.stopPropagation(); });
     const search = h("div", { className: "sx-search" },
       this.findBox, this.findMode,
-      h("button", { className: "sx-btn small", title: "Find next (Enter); Shift+Enter finds the previous", onclick: () => this.find(1) }, "Find"),
+      h("button", { className: "sx-btn small", title: t("Find next (Enter); Shift+Enter finds the previous"), onclick: () => this.find(1) }, t("Find")),
       this.gotoBox,
     );
     this.field = h("div", { className: "sx-field" });
@@ -76,7 +77,7 @@ export class Inspector {
     this.tree = h("div", { className: "sx-tree" });
     const body = h("div", { className: "sx-pane-body" }, this.tree);
     this.el = h("div", { className: "sx-pane sx-insp" },
-      h("div", { className: "sx-pane-head" }, h("b", null, "Inspector"), h("span", { className: "sx-dim sx-grow" }), this.hoverLine),
+      h("div", { className: "sx-pane-head" }, h("b", null, t("Inspector")), h("span", { className: "sx-dim sx-grow" }), this.hoverLine),
       this.doc, search, this.field, this.data, body,
     );
     this.hoverLine.className = "sx-dim";
@@ -87,19 +88,19 @@ export class Inspector {
 
   setHeader(hd: SectionHeader | null) {
     clear(this.doc);
-    if (!hd) { this.doc.append("Choose a section on the left."); this.expanded.clear(); this.pages.clear(); this.selectedKey = null; return; }
+    if (!hd) { this.doc.append(t("Choose a section on the left.")); this.expanded.clear(); this.pages.clear(); this.selectedKey = null; return; }
     const sizeNote = hd.expected !== null && hd.expected !== hd.size
-      ? h("span", { className: "sx-warn" }, ` — the game expects ${hd.expected.toLocaleString()} bytes`)
+      ? h("span", { className: "sx-warn" }, ` — ${t("the game expects {n} bytes", { n: hd.expected.toLocaleString() })}`)
       : hd.recordSize !== null && hd.size % hd.recordSize !== 0
-        ? h("span", { className: "sx-warn" }, ` — not a whole number of ${hd.recordSize}-byte records`)
+        ? h("span", { className: "sx-warn" }, ` — ${t("not a whole number of {n}-byte records", { n: hd.recordSize })}`)
         : null;
     this.doc.append(
       h("div", null, h("b", { className: "sx-mono" }, hd.name), " ", h("span", null, hd.what), h("span", { className: "sx-faint" }, ` · ${hd.mode}${hd.occurrence ? ` · ${hd.occurrence}` : ""}`)),
-      h("div", null, `${hd.size.toLocaleString()} bytes`, hd.recordSize !== null ? ` — ${Math.floor(hd.size / hd.recordSize).toLocaleString()} records of ${hd.recordSize}` : "", sizeNote ?? ""),
-      hd.doc ? h("div", { style: "margin-top:3px" }, hd.doc) : h("div", { style: "margin-top:3px" }, "The editor has no layout for this section; the bytes are shown as they are."),
+      h("div", null, t("{n} bytes", { n: hd.size.toLocaleString() }), hd.recordSize !== null ? ` — ${t("{count} records of {size}", { count: Math.floor(hd.size / hd.recordSize).toLocaleString(), size: hd.recordSize })}` : "", sizeNote ?? ""),
+      hd.doc ? h("div", { style: "margin-top:3px" }, hd.doc) : h("div", { style: "margin-top:3px" }, t("The editor has no layout for this section; the bytes are shown as they are.")),
       hd.modelled
-        ? h("div", { className: "sx-faint", style: "margin-top:3px" }, hd.dirty ? "The editor has unsaved changes here; what you see is what Save would write." : "The editor decodes this section; an applied edit is read back into the map.")
-        : h("div", { className: "sx-faint", style: "margin-top:3px" }, "The editor keeps this section as bytes and writes it back unchanged."),
+        ? h("div", { className: "sx-faint", style: "margin-top:3px" }, hd.dirty ? t("The editor has unsaved changes here; what you see is what Save would write.") : t("The editor decodes this section; an applied edit is read back into the map."))
+        : h("div", { className: "sx-faint", style: "margin-top:3px" }, t("The editor keeps this section as bytes and writes it back unchanged.")),
     );
   }
 
@@ -136,10 +137,10 @@ export class Inspector {
     const buf = this.host.buffer();
     const root = this.host.layout();
     if (!buf) return;
-    if (buf.length === 0) { this.field.append(h("div", { className: "sx-fdoc" }, "No bytes.")); return; }
+    if (buf.length === 0) { this.field.append(h("div", { className: "sx-fdoc" }, t("No bytes."))); return; }
     const hit = root ? leafAt(root, this.cursor) : null;
     if (!hit) {
-      this.field.append(h("div", { className: "sx-crumb" }, h("b", null, `byte 0x${this.cursor.toString(16)}`)), h("div", { className: "sx-fdoc" }, root ? "Not part of the layout." : "Type hex digits in the byte column or characters in the text column to change it."));
+      this.field.append(h("div", { className: "sx-crumb" }, h("b", null, t("byte {offset}", { offset: `0x${this.cursor.toString(16)}` }))), h("div", { className: "sx-fdoc" }, root ? t("Not part of the layout.") : t("Type hex digits in the byte column or characters in the text column to change it.")));
       return;
     }
     const { leaf, path } = hit;
@@ -151,12 +152,12 @@ export class Inspector {
     crumb.append(h("b", null, leaf.label));
     this.field.append(crumb);
     this.field.append(h("div", { className: "sx-fdoc" },
-      h("span", { className: "sx-mono" }, `${leaf.type}`), ` at 0x${leaf.start.toString(16)}`, leaf.size > 1 ? `, ${leaf.size} bytes` : "",
-      leaf.start + leaf.size > buf.length ? h("span", { className: "sx-warn" }, " — runs past the end of the section") : "",
-      leaf.doc ? h("div", null, leaf.doc) : "",
+      h("span", { className: "sx-mono" }, `${leaf.type}`), ` ${t("at {offset}", { offset: `0x${leaf.start.toString(16)}` })}`, leaf.size > 1 ? `, ${t("{n} bytes", { n: leaf.size })}` : "",
+      leaf.start + leaf.size > buf.length ? h("span", { className: "sx-warn" }, ` — ${t("runs past the end of the section")}`) : "",
+      leaf.doc ? h("div", null, translate(leaf.doc)) : "",
     ));
     const sem = leaf.semantic;
-    const value = h("div", { className: "sx-frow" }, h("label", null, "value"), h("div", { className: "sx-mono" }, d.text, d.meaning ? h("span", { className: "sx-dim" }, `  ${d.meaning}`) : ""));
+    const value = h("div", { className: "sx-frow" }, h("label", null, t("value")), h("div", { className: "sx-mono" }, d.text, d.meaning ? h("span", { className: "sx-dim" }, `  ${d.meaning}`) : ""));
     this.field.append(value);
     if (!sem || sem.edit === "none" || leaf.type === "bytes") return;
     const commit = (bytes: Uint8Array) => { this.editing = true; try { buf.set(leaf.start, bytes); } finally { this.editing = false; } this.renderField(); };
@@ -164,7 +165,7 @@ export class Inspector {
       const input = h("input", { type: "text", value: readChars(buf.bytes, leaf.start, leaf.size), maxlength: leaf.size, spellcheck: false }) as HTMLInputElement;
       input.addEventListener("keydown", (e) => e.stopPropagation());
       input.addEventListener("change", () => { const out = new Uint8Array(leaf.size); out.set(latin1(input.value).subarray(0, leaf.size)); commit(out); });
-      this.field.append(h("div", { className: "sx-frow" }, h("label", null, "text"), input));
+      this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("text")), input));
       return;
     }
     const prim = leaf.type as Exclude<Prim, "chars" | "bytes">;
@@ -175,11 +176,11 @@ export class Inspector {
       const select = h("select") as HTMLSelectElement;
       let present = false;
       for (const o of options) { select.append(h("option", { value: o.value }, `${o.value} — ${o.label}`)); if (o.value === d.value) present = true; }
-      if (!present) select.prepend(h("option", { value: d.value }, `${d.value} — (not in the list)`));
+      if (!present) select.prepend(h("option", { value: d.value }, `${d.value} — ${t("(not in the list)")}`));
       select.value = String(d.value);
       select.addEventListener("keydown", (e) => e.stopPropagation());
       select.addEventListener("change", () => write(Number(select.value)));
-      this.field.append(h("div", { className: "sx-frow" }, h("label", null, "choose"), select));
+      this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("choose")), select));
     }
     if (sem.edit === "flags" && sem.bits) {
       const box = h("div", { className: "sx-flagbox" });
@@ -188,12 +189,12 @@ export class Inspector {
         cb.addEventListener("change", () => write(cb.checked ? d.value | b.bit : d.value & ~b.bit));
         box.append(h("label", null, cb, b.label));
       }
-      this.field.append(h("div", { className: "sx-frow" }, h("label", null, "bits"), box));
+      this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("bits")), box));
     }
     const num = h("input", { type: "text", value: sem.hex ? `0x${(d.value >>> 0).toString(16)}` : String(d.value), spellcheck: false }) as HTMLInputElement;
     num.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); num.dispatchEvent(new Event("change")); } });
     num.addEventListener("change", () => { const v = parseNumber(num.value); if (v !== null) write(v); else num.value = String(d.value); });
-    this.field.append(h("div", { className: "sx-frow" }, h("label", null, "number"), num));
+    this.field.append(h("div", { className: "sx-frow" }, h("label", null, t("number")), num));
   }
 
   private renderData() {
@@ -203,13 +204,13 @@ export class Inspector {
     const b = buf.bytes;
     const at = this.cursor;
     const row = (k: string, v: string) => { this.data.append(h("span", { className: "k" }, k), h("span", { className: "v" }, v)); };
-    row("offset", `${at} (0x${at.toString(16)})`);
+    row(t("offset"), `${at} (0x${at.toString(16)})`);
     row("u8 / i8", `${readPrim(b, "u8", at, 1)} / ${readPrim(b, "i8", at, 1)}`);
     if (at + 2 <= b.length) row("u16 / i16", `${readPrim(b, "u16", at, 2)} / ${readPrim(b, "i16", at, 2)}`);
     if (at + 4 <= b.length) row("u32 / i32", `${readPrim(b, "u32", at, 4)} / ${readPrim(b, "i32", at, 4)}`);
-    row("bits", b[at].toString(2).padStart(8, "0"));
-    row("char", b[at] >= 0x20 && b[at] < 0x7f ? `'${String.fromCharCode(b[at])}'` : b[at] === 0 ? "NUL" : `\\x${b[at].toString(16).padStart(2, "0")}`);
-    if (at + 4 <= b.length) row("chars", JSON.stringify(readChars(b, at, 4, false)));
+    row(t("bits"), b[at].toString(2).padStart(8, "0"));
+    row(t("char"), b[at] >= 0x20 && b[at] < 0x7f ? `'${String.fromCharCode(b[at])}'` : b[at] === 0 ? "NUL" : `\\x${b[at].toString(16).padStart(2, "0")}`);
+    if (at + 4 <= b.length) row(t("chars"), JSON.stringify(readChars(b, at, 4, false)));
   }
 
   /* ── Find / go to ─────────────────────────────────────── */
@@ -229,7 +230,7 @@ export class Inspector {
   find(direction: 1 | -1 = 1) {
     const buf = this.host.buffer();
     const needle = this.needle();
-    if (!buf || !needle) { this.host.onStatus("Nothing to look for — type hex digits, text or a number."); return; }
+    if (!buf || !needle) { this.host.onStatus(t("Nothing to look for — type hex digits, text or a number.")); return; }
     let at = -1;
     if (direction > 0) at = findBytes(buf.bytes, needle, this.cursor + 1, true);
     else {
@@ -238,14 +239,14 @@ export class Inspector {
       for (;;) { const hit = findBytes(buf.bytes, needle, from, false); if (hit < 0 || hit >= this.cursor) break; at = hit; from = hit + 1; }
       if (at < 0) { let from2 = this.cursor; for (;;) { const hit = findBytes(buf.bytes, needle, from2, false); if (hit < 0) break; at = hit; from2 = hit + 1; } }
     }
-    if (at < 0) { this.host.onStatus("Not found."); return; }
+    if (at < 0) { this.host.onStatus(t("Not found.")); return; }
     this.host.onFound(at, needle.length);
-    this.host.onStatus(`Found at 0x${at.toString(16)}.`);
+    this.host.onStatus(t("Found at {offset}.", { offset: `0x${at.toString(16)}` }));
   }
 
   private goto() {
     const v = parseNumber(this.gotoBox.value);
-    if (v === null) { this.host.onStatus("An offset is a number: 1234 or 0x4d2."); return; }
+    if (v === null) { this.host.onStatus(t("An offset is a number: 1234 or 0x4d2.")); return; }
     this.host.onGoto(v);
   }
 
@@ -285,7 +286,7 @@ export class Inspector {
     const root = this.host.layout();
     const buf = this.host.buffer();
     if (!root || !buf) {
-      this.tree.append(h("div", { className: "sx-hint" }, buf ? "No layout for this section. Hover the bytes for their offsets; the hex view still edits them." : ""));
+      this.tree.append(h("div", { className: "sx-hint" }, buf ? t("No layout for this section. Hover the bytes for their offsets; the hex view still edits them.") : ""));
       return;
     }
     this.expanded.add(key(root));
@@ -299,12 +300,12 @@ export class Inspector {
     const k = key(node);
     const container = !!node.child && !!node.count;
     const open = container && this.expanded.has(k);
-    const row = h("div", { className: `sx-node ${container ? "cont" : "leaf"}${this.selectedKey === k ? " on" : ""}`, style: `padding-left:${6 + depth * 12}px`, title: node.doc ?? "" });
+    const row = h("div", { className: `sx-node ${container ? "cont" : "leaf"}${this.selectedKey === k ? " on" : ""}`, style: `padding-left:${6 + depth * 12}px`, title: node.doc ? translate(node.doc) : "" });
     const tw = h("span", { className: "sx-tw" }, container ? (open ? "▾" : "▸") : "");
     tw.addEventListener("click", (e) => { e.stopPropagation(); if (!container) return; if (open) this.expanded.delete(k); else this.expanded.add(k); this.renderTree(); });
     row.append(tw, h("span", { className: "sx-lbl" }, node.label));
     if (container) {
-      const summary = node.summary?.() ?? `${node.count} ${node.count === 1 ? "entry" : "entries"}, ${node.size.toLocaleString()} bytes`;
+      const summary = node.summary?.() ?? t("{n, plural, one {# entry} other {# entries}}, {size} bytes", { n: node.count!, size: node.size.toLocaleString() });
       row.append(h("span", { className: "sx-mean" }, ` ${summary}`));
     } else {
       const d = describe(node, buf.bytes, ctx, siblingsOf([...path, node], buf.bytes));
@@ -334,7 +335,7 @@ export class Inspector {
         h("button", { className: "sx-btn small", disabled: page === 0, onclick: () => { this.pages.set(k, page - 1); this.renderTree(); } }, "‹"),
         select,
         h("button", { className: "sx-btn small", disabled: to >= count, onclick: () => { this.pages.set(k, page + 1); this.renderTree(); } }, "›"),
-        h("span", null, `of ${count.toLocaleString()}`),
+        h("span", null, t("of {n}", { n: count.toLocaleString() })),
       ));
     }
     for (let i = from; i < to; i++) frag.append(this.renderNode(node.child!(i), depth + 1, next));
