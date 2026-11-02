@@ -1,5 +1,5 @@
 /**
- * Section Explorer — a plugin for the scmJS map editor (https://github.com/jeany55/scm-js).
+ * Section Explorer — a plugin for the scmJS map editor (https://github.com/scm-js/scm-js).
  *
  * Tools ▸ Section Explorer… opens the map file the way the game reads it: every section
  * in the order Save would write them, its bytes in a hex view coloured by field, and an
