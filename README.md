@@ -29,7 +29,7 @@ Or open **Plugins ▸ Manage Plugins…**, paste
 https://github.com/scm-js/plugin-section-explorer
 ```
 
-and press **Add**. To pin a version, add a ref: `github:scm-js/plugin-section-explorer@v1.1.0`.
+and press **Add**. To pin a version, add a ref: `github:scm-js/plugin-section-explorer@v1.2.0`.
 
 ## Use
 
@@ -100,11 +100,12 @@ history, as Resize does.
 **Revert** reads every section again and drops your changes. **Close** asks once if there are
 changes you have not applied.
 
-The layouts follow the community's
-[Scenario.chk reference](https://wiki.staredit.net/wiki/Scenario.chk) and the editor's own
-code. A section with no layout (an unknown name, or junk left by a map protector) is shown as
-plain bytes and can be edited the same way. The editor's
-[section reference](https://docs.scmjs.dev/chk/) describes each section.
+The layouts and what they say about each byte follow the editor's
+[CHK reference](https://docs.scmjs.dev/chk/), which was checked against what StarCraft 1.16.1
+and Remastered do with a map. Where the game ignores a field, or reads it differently from
+what older references say, the inspector says what the game does. A section with no layout
+(an unknown name, or junk left by a map protector) is shown as plain bytes and can be edited
+the same way.
 
 ## Development
 
