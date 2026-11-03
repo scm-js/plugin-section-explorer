@@ -1406,15 +1406,19 @@ function parseNumber(text) {
 // ko.ts
 var KO = {
   "(not in the list)": "(\uBAA9\uB85D\uC5D0 \uC5C6\uC74C)",
-  "1 = the game uses units.dat / weapons.dat for this type.": "1\uC774\uBA74 \uAC8C\uC784\uC774 \uC774 \uC885\uB958\uC5D0 units.dat / weapons.dat \uAC12\uC744 \uC501\uB2C8\uB2E4.",
+  "0 = this section's values for the type; anything else = the game's own, and the rest of the section is ignored for it, the name included.": "0\uC774\uBA74 \uC774 \uC885\uB958\uC5D0 \uC774 \uC139\uC158\uC758 \uAC12\uC744 \uC501\uB2C8\uB2E4. \uB2E4\uB978 \uAC12\uC774\uBA74 \uAC8C\uC784 \uC790\uCCB4\uC758 \uAC12\uC744 \uC4F0\uACE0, \uC774\uB984\uC744 \uD3EC\uD568\uD574 \uC774 \uC139\uC158\uC758 \uB098\uBA38\uC9C0\uB294 \uC774 \uC885\uB958\uC5D0 \uBB34\uC2DC\uB429\uB2C8\uB2E4.",
+  "0 = this section's values; anything else = the game's own.": "0\uC774\uBA74 \uC774 \uC139\uC158\uC758 \uAC12\uC744, \uB2E4\uB978 \uAC12\uC774\uBA74 \uAC8C\uC784 \uC790\uCCB4\uC758 \uAC12\uC744 \uC501\uB2C8\uB2E4.",
+  "0x02 disables the action and 0x04 always displays its text; the other bits are editor and game bookkeeping.": "0x02\uB294 \uC561\uC158\uC744 \uB044\uACE0, 0x04\uB294 \uD14D\uC2A4\uD2B8\uB97C \uD56D\uC0C1 \uD45C\uC2DC\uD569\uB2C8\uB2E4. \uB2E4\uB978 \uBE44\uD2B8\uB294 \uC5D0\uB514\uD130\uC640 \uAC8C\uC784\uC758 \uAE30\uB85D\uC6A9\uC785\uB2C8\uB2E4.",
+  "0x02 disables the condition; the other bits are editor and game bookkeeping.": "0x02\uB294 \uC870\uAC74\uC744 \uB055\uB2C8\uB2E4. \uB2E4\uB978 \uBE44\uD2B8\uB294 \uC5D0\uB514\uD130\uC640 \uAC8C\uC784\uC758 \uAE30\uB85D\uC6A9\uC785\uB2C8\uB2E4.",
+  "0x02 makes the player count as having won each time the actions run: every other player still in the game is defeated, and the player plays on. The game sets 0x01, 0x10, 0x20 and 0x40 itself while the trigger runs; StarEdit saves them as 0, but a file that sets them is obeyed.": "0x02\uB294 \uC561\uC158\uC774 \uC2E4\uD589\uB420 \uB54C\uB9C8\uB2E4 \uADF8 \uD50C\uB808\uC774\uC5B4\uAC00 \uC774\uAE34 \uAC83\uC73C\uB85C \uCE69\uB2C8\uB2E4. \uAC8C\uC784\uC5D0 \uB0A8\uC740 \uB2E4\uB978 \uD50C\uB808\uC774\uC5B4\uB294 \uBAA8\uB450 \uD328\uBC30\uD558\uACE0, \uADF8 \uD50C\uB808\uC774\uC5B4\uB294 \uACC4\uC18D \uD50C\uB808\uC774\uD569\uB2C8\uB2E4. 0x01, 0x10, 0x20, 0x40\uC740 \uD2B8\uB9AC\uAC70\uAC00 \uC2E4\uD589\uB418\uB294 \uB3D9\uC548 \uAC8C\uC784\uC774 \uC9C1\uC811 \uCF2D\uB2C8\uB2E4. StarEdit\uC740 0\uC73C\uB85C \uC800\uC7A5\uD558\uC9C0\uB9CC, \uD30C\uC77C\uC5D0 \uCF1C\uC838 \uC788\uC73C\uBA74 \uAC8C\uC784\uC740 \uADF8\uB300\uB85C \uB530\uB985\uB2C8\uB2E4.",
   "A section name is one to four characters.": "\uC139\uC158 \uC774\uB984\uC740 \uD55C \uAE00\uC790\uC5D0\uC11C \uB124 \uAE00\uC790\uC785\uB2C8\uB2E4.",
   "A set bit excludes that elevation; 0 is everywhere.": "\uCF1C\uC9C4 \uBE44\uD2B8\uB294 \uADF8 \uB192\uC774\uB97C \uC81C\uC678\uD569\uB2C8\uB2E4. 0\uC774\uBA74 \uBAA8\uB4E0 \uACF3\uC785\uB2C8\uB2E4.",
   "A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps).": "\uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8\uBA74 sprites.dat ID, \uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8 \uD50C\uB798\uADF8\uAC00 \uAEBC\uC838 \uC788\uC73C\uBA74 units.dat ID\uC785\uB2C8\uB2E4 (\uBB38, \uD568\uC815).",
   "Add": "\uCD94\uAC00",
   "Added {name} ({n} bytes).": "{name}\uC744(\uB97C) \uCD94\uAC00\uD588\uC2B5\uB2C8\uB2E4 ({n}\uBC14\uC774\uD2B8).",
   "Add\u2026": "\uCD94\uAC00\u2026",
-  "Alignment byte.": "\uC815\uB82C\uC6A9 \uBC14\uC774\uD2B8.",
   "An offset is a number: 1234 or 0x4d2.": "\uC624\uD504\uC14B\uC740 \uC22B\uC790\uC785\uB2C8\uB2E4: 1234 \uB610\uB294 0x4d2.",
+  "An older StarEdit version stamp. Only editors read it, and StarEdit no longer writes it.": "\uC608\uC804 StarEdit\uC758 \uBC84\uC804 \uD45C\uC2DC. \uC5D0\uB514\uD130\uB9CC \uC77D\uC73C\uBA70, StarEdit\uC740 \uC774\uC81C \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
   "Append": "\uB05D\uC5D0 \uCD94\uAC00",
   "Append a blank record at the end": "\uBE48 \uB808\uCF54\uB4DC\uB97C \uB05D\uC5D0 \uCD94\uAC00\uD569\uB2C8\uB2E4",
   "Applied {n, plural, one {# section} other {# sections}}.": "\uC139\uC158 {n}\uAC1C\uB97C \uC801\uC6A9\uD588\uC2B5\uB2C8\uB2E4.",
@@ -1423,7 +1427,13 @@ var KO = {
   "Apply failed: {error}": "\uC801\uC6A9\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: {error}",
   "Byte offset of each string from the start of the section; index 0 has no entry.": "\uC139\uC158 \uC2DC\uC791\uBD80\uD130 \uAC01 \uBB38\uC790\uC5F4\uAE4C\uC9C0\uC758 \uBC14\uC774\uD2B8 \uC624\uD504\uC14B\uC785\uB2C8\uB2E4. \uC778\uB371\uC2A4 0\uC740 \uD56D\uBAA9\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
   "Bytes": "\uBC14\uC774\uD2B8",
-  "Bytes past the end of the layout. The game ignores what it does not read.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC77D\uC9C0 \uC54A\uB294 \uBD80\uBD84\uC744 \uBB34\uC2DC\uD569\uB2C8\uB2E4.",
+  "Bytes past the end of the layout.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4.",
+  "Bytes past the end of the layout. Only editors read this section, so they make no difference to the game.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uC774 \uC139\uC158\uC740 \uC5D0\uB514\uD130\uB9CC \uC77D\uC73C\uBBC0\uB85C \uAC8C\uC784\uC5D0\uB294 \uC601\uD5A5\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+  "Bytes past the end of the layout. The game accepts this section at any length and does not use them.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC774 \uC139\uC158\uC744 \uC5B4\uB5A4 \uAE38\uC774\uB85C\uB3C4 \uBC1B\uC73C\uBA70, \uC774 \uBC14\uC774\uD2B8\uB294 \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "Bytes past the end of the layout. The game takes this section only at exactly its size: with these bytes it refuses the map.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC774 \uC139\uC158\uC744 \uC815\uD655\uD788 \uC81C \uD06C\uAE30\uC77C \uB54C\uB9CC \uBC1B\uC73C\uBBC0\uB85C, \uC774 \uBC14\uC774\uD2B8\uAC00 \uC788\uC73C\uBA74 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4.",
+  "Bytes past the end of the layout. The game takes this section up to its size and fills a short one with zeros, but a longer one refuses the map.": "\uB808\uC774\uC544\uC6C3 \uB05D\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC774 \uC139\uC158\uC744 \uC81C \uD06C\uAE30\uAE4C\uC9C0 \uBC1B\uACE0 \uC9E7\uC73C\uBA74 0\uC73C\uB85C \uCC44\uC6B0\uC9C0\uB9CC, \uB354 \uAE38\uBA74 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4.",
+  "Bytes past the last whole briefing. With a length like this the map plays without a briefing.": "\uB9C8\uC9C0\uB9C9 \uC628\uC804\uD55C \uBE0C\uB9AC\uD551\uC744 \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uC774\uB7F0 \uAE38\uC774\uBA74 \uB9F5\uC740 \uBE0C\uB9AC\uD551 \uC5C6\uC774 \uC9C4\uD589\uB429\uB2C8\uB2E4.",
+  "Bytes past the last whole record. The game takes only whole records here: a length like this refuses the map.": "\uB9C8\uC9C0\uB9C9 \uC628\uC804\uD55C \uB808\uCF54\uB4DC\uB97C \uB118\uC5B4\uC120 \uBC14\uC774\uD2B8\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC5EC\uAE30\uC11C \uC628\uC804\uD55C \uB808\uCF54\uB4DC\uB9CC \uBC1B\uC73C\uBBC0\uB85C, \uC774\uB7F0 \uAE38\uC774\uBA74 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4.",
   "Cancel": "\uCDE8\uC18C",
   "Centre of the footprint.": "\uCC28\uC9C0\uD558\uB294 \uC601\uC5ED\uC758 \uC911\uC2EC.",
   "Centre, in map pixels.": "\uC911\uC2EC, \uB9F5 \uD53D\uC140 \uB2E8\uC704.",
@@ -1445,12 +1455,11 @@ var KO = {
   "Find": "\uCC3E\uAE30",
   "Find next (Enter); Shift+Enter finds the previous": "\uB2E4\uC74C \uCC3E\uAE30 (Enter). Shift+Enter\uB294 \uC774\uC804\uC744 \uCC3E\uC2B5\uB2C8\uB2E4",
   "Fit to {n}": "{n}\uC5D0 \uB9DE\uCD94\uAE30",
-  "Fog of war: one byte per cell, one bit per player 1\u20138, set where that player starts unexplored. A map without MASK is fully fogged.": "\uC804\uC7A5\uC758 \uC548\uAC1C: \uCE78\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8, \uD50C\uB808\uC774\uC5B4 1\u20138\uB9C8\uB2E4 \uD55C \uBE44\uD2B8\uB85C, \uADF8 \uD50C\uB808\uC774\uC5B4\uAC00 \uD0D0\uC0C9\uD558\uC9C0 \uC54A\uC740 \uC0C1\uD0DC\uB85C \uC2DC\uC791\uD558\uB294 \uACF3\uC5D0 \uCF1C\uC9D1\uB2C8\uB2E4. MASK\uAC00 \uC5C6\uB294 \uB9F5\uC740 \uC804\uBD80 \uC548\uAC1C\uC5D0 \uB36E\uC785\uB2C8\uB2E4.",
-  "Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags.": "\uC138\uB825: \uD50C\uB808\uC774 \uAC00\uB2A5\uD55C \uC5EC\uB35F \uC2AC\uB86F\uC774 \uAC01\uAC01 \uC18D\uD55C \uC138\uB825, \uB124 \uC138\uB825\uC758 \uC774\uB984, \uC138\uB825\uBCC4 \uD50C\uB798\uADF8.",
+  "Fog of war: one byte per tile, one bit per player 1\u20138, set where that player starts unexplored. Only Use Map Settings reads it, and it needs it: without MASK a Use Map Settings game does not start. Tiles past the end of a short MASK start unexplored.": "\uC804\uC7A5\uC758 \uC548\uAC1C: \uD0C0\uC77C\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8, \uD50C\uB808\uC774\uC5B4 1\u20138\uB9C8\uB2E4 \uD55C \uBE44\uD2B8\uB85C, \uADF8 \uD50C\uB808\uC774\uC5B4\uAC00 \uD0D0\uC0C9\uD558\uC9C0 \uC54A\uC740 \uC0C1\uD0DC\uB85C \uC2DC\uC791\uD558\uB294 \uACF3\uC5D0 \uCF1C\uC9D1\uB2C8\uB2E4. \uC720\uC988\uB9F5 \uC138\uD305\uB9CC \uC77D\uC73C\uBA70 \uBC18\uB4DC\uC2DC \uD544\uC694\uD569\uB2C8\uB2E4: MASK\uAC00 \uC5C6\uC73C\uBA74 \uC720\uC988\uB9F5 \uC138\uD305 \uAC8C\uC784\uC774 \uC2DC\uC791\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC9E7\uC740 MASK\uC758 \uB05D\uC744 \uB118\uC5B4\uC120 \uD0C0\uC77C\uC740 \uD0D0\uC0C9\uD558\uC9C0 \uC54A\uC740 \uC0C1\uD0DC\uB85C \uC2DC\uC791\uD569\uB2C8\uB2E4.",
+  "Forces: which force each of Players 1 to 8 belongs to, the four force names, and per-force flags. A shorter section is filled out with zeros; a longer one refuses the map.": "\uC138\uB825: \uD50C\uB808\uC774\uC5B4 1\u20138\uC774 \uAC01\uAC01 \uC18D\uD55C \uC138\uB825, \uB124 \uC138\uB825\uC758 \uC774\uB984, \uC138\uB825\uBCC4 \uD50C\uB798\uADF8. \uC9E7\uC740 \uC139\uC158\uC740 0\uC73C\uB85C \uCC44\uC6B0\uACE0, \uAE34 \uC139\uC158\uC740 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4.",
   "Found at {offset}.": "{offset}\uC5D0\uC11C \uCC3E\uC558\uC2B5\uB2C8\uB2E4.",
   "Game frames.": "\uAC8C\uC784 \uD504\uB808\uC784.",
   "Hit points \xD7 256.": "\uCCB4\uB825 \xD7 256.",
-  "How relatedSerial is linked.": "relatedSerial\uC774 \uC5F0\uACB0\uB41C \uBC29\uC2DD.",
   "Import .chk\u2026": ".chk \uAC00\uC838\uC624\uAE30\u2026",
   "Import\u2026": "\uAC00\uC838\uC624\uAE30\u2026",
   "Index into the tileset's dddata.bin.": "\uD0C0\uC77C\uC14B dddata.bin\uC758 \uC778\uB371\uC2A4.",
@@ -1461,13 +1470,15 @@ var KO = {
   "Insert record": "\uB808\uCF54\uB4DC \uC0BD\uC785",
   "Inserted a blank record at {offset}.": "{offset}\uC5D0 \uBE48 \uB808\uCF54\uB4DC\uB97C \uB123\uC5C8\uC2B5\uB2C8\uB2E4.",
   "Inspector": "\uAC80\uC0AC\uAE30",
-  "Interceptors or Scarabs.": "\uC778\uD130\uC149\uD130 \uB610\uB294 \uC2A4\uCE90\uB7FD.",
+  "Interceptors or Scarabs. Read only for Carriers, Reavers and their heroes: the low byte, and no more than the unit can hold.": "\uC778\uD130\uC149\uD130 \uB610\uB294 \uC2A4\uCE90\uB7FD. \uCE90\uB9AC\uC5B4, \uB9AC\uBC84\uC640 \uADF8 \uC601\uC6C5\uC5D0\uAC8C\uB9CC \uC77D\uC2B5\uB2C8\uB2E4. \uC544\uB798 \uBC14\uC774\uD2B8\uB9CC, \uC720\uB2DB\uC774 \uB2F4\uC744 \uC218 \uC788\uB294 \uB9CC\uD07C\uAE4C\uC9C0.",
   "Kept as bytes and written back unchanged": "\uBC14\uC774\uD2B8 \uADF8\uB300\uB85C \uB450\uC5C8\uB2E4\uAC00 \uBC14\uAFB8\uC9C0 \uC54A\uACE0 \uB2E4\uC2DC \uC500",
   "Kept the section.": "\uC139\uC158\uC744 \uADF8\uB300\uB85C \uB450\uC5C8\uC2B5\uB2C8\uB2E4.",
-  "Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere.": "\uB85C\uCF00\uC774\uC158, \uAC01 20\uBC14\uC774\uD2B8: \uC624\uB9AC\uC9C0\uB110 \uB9F5\uC740 64\uC2AC\uB86F, \uBE0C\uB8E8\uB4DC \uC6CC\uB294 255\uC2AC\uB86F. \uC2AC\uB86F 63\uC740 Anywhere\uC785\uB2C8\uB2E4.",
-  "Map width and height in tiles.": "\uD0C0\uC77C \uB2E8\uC704\uC758 \uB9F5 \uB108\uBE44\uC640 \uB192\uC774.",
-  "Minerals or gas held by a resource unit.": "\uC790\uC6D0 \uC720\uB2DB\uC774 \uAC00\uC9C4 \uBBF8\uB124\uB784 \uB610\uB294 \uAC00\uC2A4.",
-  "Mission briefings: the same record as TRIG with briefing action types.": "\uBBF8\uC158 \uBE0C\uB9AC\uD551: TRIG\uC640 \uAC19\uC740 \uB808\uCF54\uB4DC\uC5D0 \uBE0C\uB9AC\uD551 \uC561\uC158 \uC885\uB958\uB97C \uC501\uB2C8\uB2E4.",
+  "Link flags editors write. The game never reads them: it links an add-on to its building, or a nydus canal to its exit, only when each of the two records names the other's serial.": "\uC5D0\uB514\uD130\uAC00 \uC4F0\uB294 \uC5F0\uACB0 \uD50C\uB798\uADF8. \uAC8C\uC784\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uB450 \uB808\uCF54\uB4DC\uAC00 \uC11C\uB85C\uC758 \uC2DC\uB9AC\uC5BC\uC744 \uAC00\uB9AC\uD0AC \uB54C\uB9CC \uC560\uB4DC\uC628\uC744 \uAC74\uBB3C\uC5D0, \uB098\uC774\uB354\uC2A4 \uCEE4\uB110\uC744 \uCD9C\uAD6C\uC5D0 \uC5F0\uACB0\uD569\uB2C8\uB2E4.",
+  "Locations, 20 bytes each: exactly 64 in a VER 59 file and 255 from VER 63 up; any other length refuses the map. Slot 63, counting from 0, is Anywhere, which triggers store as location 64. The game takes each box as stored, so one with its edges swapped never finds units.": "\uB85C\uCF00\uC774\uC158, \uD558\uB098\uC5D0 20\uBC14\uC774\uD2B8: VER 59 \uD30C\uC77C\uC5D0\uC11C\uB294 \uC815\uD655\uD788 64\uAC1C, VER 63\uBD80\uD130\uB294 255\uAC1C\uC774\uBA70, \uB2E4\uB978 \uAE38\uC774\uBA74 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4. 0\uBD80\uD130 \uC138\uC5B4 \uC2AC\uB86F 63\uC774 Anywhere\uC774\uACE0, \uD2B8\uB9AC\uAC70\uB294 \uC774\uAC83\uC744 \uB85C\uCF00\uC774\uC158 64\uB85C \uC800\uC7A5\uD569\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC0C1\uC790\uB97C \uC800\uC7A5\uB41C \uADF8\uB300\uB85C \uC4F0\uBBC0\uB85C, \uAC00\uC7A5\uC790\uB9AC\uAC00 \uB4A4\uBC14\uB010 \uB85C\uCF00\uC774\uC158\uC740 \uC720\uB2DB\uC744 \uCC3E\uC9C0 \uBABB\uD569\uB2C8\uB2E4.",
+  "Map width and height in tiles. The game checks the section's length, not the values; Remastered refuses a side above 256.": "\uD0C0\uC77C \uB2E8\uC704\uC758 \uB9F5 \uB108\uBE44\uC640 \uB192\uC774. \uAC8C\uC784\uC740 \uAC12\uC774 \uC544\uB2C8\uB77C \uC139\uC158 \uAE38\uC774\uB97C \uAC80\uC0AC\uD569\uB2C8\uB2E4. \uB9AC\uB9C8\uC2A4\uD130\uB294 \uD55C \uBCC0\uC774 256\uBCF4\uB2E4 \uD06C\uBA74 \uAC70\uBD80\uD569\uB2C8\uB2E4.",
+  "Milliseconds, or seconds for Set Countdown Timer.": "\uBC00\uB9AC\uCD08. Set Countdown Timer\uC5D0\uC11C\uB294 \uCD08\uC785\uB2C8\uB2E4.",
+  "Minerals or gas held by a resource unit. The game keeps only the low 16 bits, so 70,000 becomes 4,464.": "\uC790\uC6D0 \uC720\uB2DB\uC774 \uAC00\uC9C4 \uBBF8\uB124\uB784\uC774\uB098 \uAC00\uC2A4. \uAC8C\uC784\uC740 \uC544\uB798 16\uBE44\uD2B8\uB9CC \uB0A8\uAE30\uBBC0\uB85C 70,000\uC740 4,464\uAC00 \uB429\uB2C8\uB2E4.",
+  "Mission briefings: the same record as TRIG with briefing action types. Without it, or at a length that is not whole records, the map plays without a briefing.": "\uC784\uBB34 \uBE0C\uB9AC\uD551: TRIG\uC640 \uAC19\uC740 \uB808\uCF54\uB4DC\uC5D0 \uBE0C\uB9AC\uD551 \uC561\uC158 \uC885\uB958\uB97C \uC501\uB2C8\uB2E4. \uC5C6\uAC70\uB098 \uAE38\uC774\uAC00 \uB808\uCF54\uB4DC \uB2E8\uC704\uB85C \uB9DE\uC9C0 \uC54A\uC73C\uBA74, \uB9F5\uC740 \uBE0C\uB9AC\uD551 \uC5C6\uC774 \uC9C4\uD589\uB429\uB2C8\uB2E4.",
   "Move down": "\uC544\uB798\uB85C \uC774\uB3D9",
   "Move up": "\uC704\uB85C \uC774\uB3D9",
   "Moved.": "\uC62E\uACBC\uC2B5\uB2C8\uB2E4.",
@@ -1480,14 +1491,17 @@ var KO = {
   "Nothing to paste \u2014 hex digits in the byte column, text in the text column.": "\uBD99\uC5EC \uB123\uC744 \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBC14\uC774\uD2B8 \uC5F4\uC5D0\uB294 16\uC9C4 \uC22B\uC790, \uD14D\uC2A4\uD2B8 \uC5F4\uC5D0\uB294 \uD14D\uC2A4\uD2B8\uB97C \uB123\uC73C\uC138\uC694.",
   "Occurrence {n} of {count}; the game combines them ({mode})": "{count}\uAC1C \uC911 {n}\uBC88\uC9F8. \uAC8C\uC784\uC774 \uC774\uB4E4\uC744 \uD569\uCE69\uB2C8\uB2E4 ({mode})",
   "One byte per player group; non-zero means the trigger runs for that group.": "\uD50C\uB808\uC774\uC5B4 \uADF8\uB8F9\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8. 0\uC774 \uC544\uB2C8\uBA74 \uD2B8\uB9AC\uAC70\uAC00 \uADF8 \uADF8\uB8F9\uC5D0\uC11C \uC2E4\uD589\uB429\uB2C8\uB2E4.",
+  "Only the low 16 bits are kept.": "\uC544\uB798 16\uBE44\uD2B8\uB9CC \uB0A8\uC2B5\uB2C8\uB2E4.",
+  "Only the low byte is kept.": "\uC544\uB798 \uBC14\uC774\uD2B8\uB9CC \uB0A8\uC2B5\uB2C8\uB2E4.",
   "Pad with zeros or cut to {n} bytes": "0\uC73C\uB85C \uCC44\uC6B0\uAC70\uB098 \uC798\uB77C\uC11C {n}\uBC14\uC774\uD2B8\uB85C \uB9CC\uB4ED\uB2C8\uB2E4",
   "Pasted {n, plural, one {# byte} other {# bytes}}.": "{n}\uBC14\uC774\uD2B8\uB97C \uBD99\uC5EC \uB123\uC5C8\uC2B5\uB2C8\uB2E4.",
-  "Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2.": "\uBC30\uCE58\uD55C \uC7A5\uC2DD\uBB3C, \uAC01 8\uBC14\uC774\uD2B8. \uAC8C\uC784\uC740 \uC774 \uC139\uC158\uC744 \uC77D\uC9C0 \uC54A\uACE0 MTXM\uC758 \uD0C0\uC77C\uACFC THG2\uC758 \uC624\uBC84\uB808\uC774 \uC2A4\uD504\uB77C\uC774\uD2B8\uB97C \uBD05\uB2C8\uB2E4.",
-  "Placed units, 36 bytes each, in the order they were placed.": "\uBC30\uCE58\uD55C \uC720\uB2DB, \uAC01 36\uBC14\uC774\uD2B8, \uBC30\uCE58\uD55C \uC21C\uC11C\uB300\uB85C.",
+  "Per cent of the unit's maximum, and capped at it.": "\uC720\uB2DB \uCD5C\uB300\uCE58\uC5D0 \uB300\uD55C \uD37C\uC13C\uD2B8\uC774\uBA70, \uCD5C\uB300\uCE58\uB97C \uB118\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "Placed doodads, 8 bytes each. Only editors read it; the game sees a doodad as its tiles in MTXM and its sprite in THG2.": "\uBC30\uCE58\uB41C \uC7A5\uC2DD\uBB3C, \uD558\uB098\uC5D0 8\uBC14\uC774\uD2B8. \uC5D0\uB514\uD130\uB9CC \uC77D\uC2B5\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC7A5\uC2DD\uBB3C\uB97C MTXM\uC758 \uD0C0\uC77C\uACFC THG2\uC758 \uC2A4\uD504\uB77C\uC774\uD2B8\uB85C \uBD05\uB2C8\uB2E4.",
+  "Placed units, 36 bytes each. When a game starts, start locations make no unit, units of a player not in the game are dropped, and melee keeps only Player 12's resources and critters. Start locations come from the last UNIT section alone.": "\uBC30\uCE58\uB41C \uC720\uB2DB, \uD558\uB098\uC5D0 36\uBC14\uC774\uD2B8. \uAC8C\uC784\uC774 \uC2DC\uC791\uB420 \uB54C \uC2DC\uC791 \uC704\uCE58\uB294 \uC720\uB2DB\uC744 \uB9CC\uB4E4\uC9C0 \uC54A\uACE0, \uAC8C\uC784\uC5D0 \uC5C6\uB294 \uD50C\uB808\uC774\uC5B4\uC758 \uC720\uB2DB\uC740 \uBE60\uC9C0\uBA70, \uBC00\uB9AC\uB294 \uD50C\uB808\uC774\uC5B4 12\uC758 \uC790\uC6D0\uACFC \uB3D9\uBB3C\uB9CC \uB0A8\uAE41\uB2C8\uB2E4. \uC2DC\uC791 \uC704\uCE58\uB294 \uB9C8\uC9C0\uB9C9 UNIT \uC139\uC158\uC5D0\uC11C\uB9CC \uAC00\uC838\uC635\uB2C8\uB2E4.",
   "Read {n} bytes from {file} \u2014 Apply to keep them.": "{file}\uC5D0\uC11C {n}\uBC14\uC774\uD2B8\uB97C \uC77D\uC5C8\uC2B5\uB2C8\uB2E4. \uC720\uC9C0\uD558\uB824\uBA74 \uC801\uC6A9\uD558\uC138\uC694.",
   "Redo": "\uB2E4\uC2DC \uC2E4\uD589",
   "Redo (Ctrl+Y)": "\uB2E4\uC2DC \uC2E4\uD589 (Ctrl+Y)",
-  "Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR.": "\uB9AC\uB9C8\uC2A4\uD130 \uD50C\uB808\uC774\uC5B4 \uC0C9: \uD50C\uB808\uC774 \uAC00\uB2A5\uD55C \uC2AC\uB86F\uB9C8\uB2E4 RGB \uC138 \uAC12, \uADF8\uB2E4\uC74C \uC2AC\uB86F\uB9C8\uB2E4 \uAC8C\uC784\uC774 \uADF8 \uC0C9, \uB85C\uBE44 \uC120\uD0DD, \uBB34\uC791\uC704 \uC0C9, COLR \uC911 \uBB34\uC5C7\uC744 \uC4F0\uB294\uC9C0 \uC815\uD558\uB294 \uBAA8\uB4DC \uBC14\uC774\uD2B8.",
+  "Remastered's player colours: three bytes per player, then a mode per player. Random and Player choice ignore the bytes; Custom uses them as red, green and blue; Palette (3, or any mode above) takes the third byte as a colour number, 0 to 21, and in a VER 205 or 206 file COLR is applied over it.": "\uB9AC\uB9C8\uC2A4\uD130\uC758 \uD50C\uB808\uC774\uC5B4 \uC0C9: \uD50C\uB808\uC774\uC5B4\uB9C8\uB2E4 \uC138 \uBC14\uC774\uD2B8, \uADF8\uB2E4\uC74C \uD50C\uB808\uC774\uC5B4\uB9C8\uB2E4 \uBAA8\uB4DC. \uBB34\uC791\uC704\uC640 \uD50C\uB808\uC774\uC5B4 \uC120\uD0DD\uC740 \uBC14\uC774\uD2B8\uB97C \uC4F0\uC9C0 \uC54A\uACE0, \uC0AC\uC6A9\uC790 \uC9C0\uC815\uC740 \uBE68\uAC15\xB7\uCD08\uB85D\xB7\uD30C\uB791\uC73C\uB85C \uC501\uB2C8\uB2E4. \uD314\uB808\uD2B8(3, \uB610\uB294 \uADF8\uBCF4\uB2E4 \uD070 \uBAA8\uB4DC)\uB294 \uC138 \uBC88\uC9F8 \uBC14\uC774\uD2B8\uB97C \uC0C9 \uBC88\uD638(0\u201321)\uB85C \uC4F0\uBA70, VER 205\uB098 206 \uD30C\uC77C\uC5D0\uC11C\uB294 \uADF8 \uC704\uC5D0 COLR\uC774 \uC801\uC6A9\uB429\uB2C8\uB2E4.",
   "Remove": "\uC81C\uAC70",
   "Remove the record under the cursor": "\uCEE4\uC11C \uC544\uB798 \uB808\uCF54\uB4DC\uB97C \uC9C0\uC6C1\uB2C8\uB2E4",
   "Remove this occurrence from the file": "\uD30C\uC77C\uC5D0\uC11C \uC774 \uC139\uC158\uC744 \uC81C\uAC70\uD569\uB2C8\uB2E4",
@@ -1506,28 +1520,29 @@ var KO = {
   "Revert": "\uB418\uB3CC\uB9AC\uAE30",
   "Reverted \u2014 every section read again from the map.": "\uB418\uB3CC\uB838\uC2B5\uB2C8\uB2E4. \uBAA8\uB4E0 \uC139\uC158\uC744 \uB9F5\uC5D0\uC11C \uB2E4\uC2DC \uC77D\uC5C8\uC2B5\uB2C8\uB2E4.",
   "Scroll the map to {target} and select it": "\uB9F5\uC744 {target}(\uC73C)\uB85C \uC2A4\uD06C\uB864\uD558\uACE0 \uC120\uD0DD\uD569\uB2C8\uB2E4",
-  "Second player, destination location, amount, switch, AI script or properties slot, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uB450 \uBC88\uC9F8 \uD50C\uB808\uC774\uC5B4, \uBAA9\uC801\uC9C0 \uB85C\uCF00\uC774\uC158, \uC591, \uC2A4\uC704\uCE58, AI \uC2A4\uD06C\uB9BD\uD2B8 \uB610\uB294 \uC18D\uC131 \uC2AC\uB86F.",
+  "Second player, destination location, amount, switch, AI script or properties slot, per type. Create Unit reads a properties slot here too: 1 to 64 uses that slot, anything else none.": "\uC885\uB958\uC5D0 \uB530\uB77C \uB450 \uBC88\uC9F8 \uD50C\uB808\uC774\uC5B4, \uBAA9\uC801\uC9C0 \uB85C\uCF00\uC774\uC158, \uC591, \uC2A4\uC704\uCE58, AI \uC2A4\uD06C\uB9BD\uD2B8 \uB610\uB294 \uC18D\uC131 \uC2AC\uB86F. Create Unit\uB3C4 \uC5EC\uAE30\uC11C \uC18D\uC131 \uC2AC\uB86F\uC744 \uC77D\uC2B5\uB2C8\uB2E4. 1\u201364\uBA74 \uADF8 \uC2AC\uB86F\uC744 \uC4F0\uACE0, \uB2E4\uB978 \uAC12\uC774\uBA74 \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
   "Section Explorer": "\uC139\uC158 \uD0D0\uC0C9\uAE30",
   "Section Explorer: open a map first.": "\uC139\uC158 \uD0D0\uC0C9\uAE30: \uBA3C\uC800 \uB9F5\uC744 \uC5EC\uC138\uC694.",
   "Section Explorer: {text}": "\uC139\uC158 \uD0D0\uC0C9\uAE30: {text}",
   "Section Explorer\u2026": "\uC139\uC158 \uD0D0\uC0C9\uAE30\u2026",
   "Sections": "\uC139\uC158",
+  "Set only while the game sets up a unit type that fires the weapon and does not use the game's own values; a unit with a turret takes its weapons from the turret.": "\uADF8 \uBB34\uAE30\uB97C \uC4F0\uB294 \uC720\uB2DB \uC885\uB958 \uC911 \uAC8C\uC784 \uC790\uCCB4\uC758 \uAC12\uC744 \uC4F0\uC9C0 \uC54A\uB294 \uAC83\uC744 \uAC8C\uC784\uC774 \uC124\uC815\uD560 \uB54C\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4. \uD3EC\uD0D1\uC774 \uC788\uB294 \uC720\uB2DB\uC740 \uD3EC\uD0D1\uC758 \uBB34\uAE30\uB97C \uC501\uB2C8\uB2E4.",
   "Set the section's length (zero-padded or cut); Enter applies": "\uC139\uC158 \uAE38\uC774\uB97C \uC815\uD569\uB2C8\uB2E4 (0\uC73C\uB85C \uCC44\uC6B0\uAC70\uB098 \uC790\uB984). Enter\uB85C \uC801\uC6A9",
   "Show on map": "\uB9F5\uC5D0\uC11C \uBCF4\uAE30",
-  "Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays.": "\uC2A4\uD504\uB77C\uC774\uD2B8, \uAC01 10\uBC14\uC774\uD2B8: \uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8(\uC21C\uC218 \uD50C\uB798\uADF8\uC640 sprites.dat ID), \uC720\uB2DB \uC2A4\uD504\uB77C\uC774\uD2B8(units.dat ID\uB85C \uB41C \uBB38\uACFC \uD568\uC815), \uADF8\uB9AC\uACE0 \uC7A5\uC2DD\uBB3C \uC624\uBC84\uB808\uC774.",
-  "StarEdit's copy of the player controllers. The game reads OWNR.": "StarEdit\uC774 \uB530\uB85C \uB454 \uD50C\uB808\uC774\uC5B4 \uC870\uC885\uC790 \uC0AC\uBCF8. \uAC8C\uC784\uC740 OWNR\uC744 \uC77D\uC2B5\uB2C8\uB2E4.",
-  "StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it.": "\uC7A5\uC2DD\uBB3C\uC744 \uBE80 \uC9C0\uD615\uC758 StarEdit \uC0AC\uBCF8: \uAC01 \uC7A5\uC2DD\uBB3C \uC544\uB798\uC5D0 \uC788\uB294 \uAC83. MTXM\uACFC \uAC19\uC740 \uB808\uC774\uC544\uC6C3\uC774\uBA70 \uAC8C\uC784\uC740 \uBB34\uC2DC\uD569\uB2C8\uB2E4.",
+  "Sprites, 10 bytes each. A pure sprite (flag 0x1000) is a picture: a tree top, a glow, a doodad's overlay. Without it the record is a unit sprite, which the game makes into a unit of that type: doors and traps. A unit sprite is made only in Use Map Settings or for Player 12.": "\uC2A4\uD504\uB77C\uC774\uD2B8, \uD558\uB098\uC5D0 10\uBC14\uC774\uD2B8. \uC21C\uC218 \uC2A4\uD504\uB77C\uC774\uD2B8(\uD50C\uB798\uADF8 0x1000)\uB294 \uADF8\uB9BC\uC785\uB2C8\uB2E4: \uB098\uBB34 \uAF2D\uB300\uAE30, \uBE5B, \uC7A5\uC2DD\uBB3C\uC758 \uB367\uADF8\uB9BC. \uD50C\uB798\uADF8\uAC00 \uC5C6\uC73C\uBA74 \uC720\uB2DB \uC2A4\uD504\uB77C\uC774\uD2B8\uC774\uBA70, \uAC8C\uC784\uC774 \uADF8 \uC885\uB958\uC758 \uC720\uB2DB\uC73C\uB85C \uB9CC\uB4ED\uB2C8\uB2E4: \uBB38\uACFC \uD568\uC815. \uC720\uB2DB \uC2A4\uD504\uB77C\uC774\uD2B8\uB294 \uC720\uC988\uB9F5 \uC138\uD305\uC774\uAC70\uB098 \uD50C\uB808\uC774\uC5B4 12\uC758 \uAC83\uC77C \uB54C\uB9CC \uB9CC\uB4E4\uC5B4\uC9D1\uB2C8\uB2E4.",
+  "StarEdit's copy of the player types. The game reads OWNR, never this.": "StarEdit\uC774 \uB530\uB85C \uB450\uB294 \uD50C\uB808\uC774\uC5B4 \uC885\uB958 \uC0AC\uBCF8. \uAC8C\uC784\uC740 OWNR\uC744 \uC77D\uACE0, \uC774\uAC83\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. Only editors read it.": "\uC7A5\uC2DD\uBB3C\uB97C \uBE80 \uC9C0\uD615\uC758 StarEdit \uC0AC\uBCF8: \uAC01 \uC7A5\uC2DD\uBB3C \uC544\uB798\uC5D0 \uC788\uB294 \uAC83. MTXM\uACFC \uAC19\uC740 \uD615\uC2DD. \uC5D0\uB514\uD130\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "StarEdit's list of the sound files in the archive (staredit\\wav\\\u2026): 512 string numbers. The game never reads it; Play WAV and Transmission store the string number of their sound themselves.": "\uC544\uCE74\uC774\uBE0C \uC548 \uC0AC\uC6B4\uB4DC \uD30C\uC77C(staredit\\wav\\\u2026)\uC758 StarEdit \uBAA9\uB85D: \uBB38\uC790\uC5F4 \uBC88\uD638 512\uAC1C. \uAC8C\uC784\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. Play WAV\uC640 Transmission\uC740 \uC0AC\uC6B4\uB4DC\uC758 \uBB38\uC790\uC5F4 \uBC88\uD638\uB97C \uC9C1\uC811 \uC800\uC7A5\uD569\uB2C8\uB2E4.",
+  "StarEdit's version stamp (11 in a map StarEdit saves for Brood War). Only editors read it.": "StarEdit\uC758 \uBC84\uC804 \uD45C\uC2DC (StarEdit\uC774 \uBE0C\uB8E8\uB4DC \uC6CC\uC6A9\uC73C\uB85C \uC800\uC7A5\uD55C \uB9F5\uC5D0\uC11C\uB294 11). \uC5D0\uB514\uD130\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
   "String index of a custom name, 0 for the default.": "\uC0AC\uC6A9\uC790 \uC9C0\uC815 \uC774\uB984\uC758 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4, \uAE30\uBCF8\uAC12\uC774\uBA74 0.",
-  "Switch names: 256 string indices, 0 for an unnamed switch.": "\uC2A4\uC704\uCE58 \uC774\uB984: \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 256\uAC1C, \uC774\uB984 \uC5C6\uB294 \uC2A4\uC704\uCE58\uB294 0.",
-  "Technology restrictions, Brood War layout (44 technologies).": "\uAE30\uC220 \uC81C\uD55C, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 44\uAC1C).",
-  "Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them.": "\uAE30\uC220 \uC81C\uD55C, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 24\uAC1C): \uD50C\uB808\uC774\uC5B4\uBCC4 \uC0AC\uC6A9 \uAC00\uB2A5 \uC5EC\uBD80\uC640 \uC5F0\uAD6C \uC0C1\uD0DC, \uC804\uCCB4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0.",
-  "Technology settings, Brood War layout (44 technologies).": "\uAE30\uC220 \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 44\uAC1C).",
-  "Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs.": "\uAE30\uC220 \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uAE30\uC220 24\uAC1C): \uAE30\uBCF8\uAC12 \uC0AC\uC6A9, \uADF8\uB2E4\uC74C \uBBF8\uB124\uB784, \uAC00\uC2A4, \uC2DC\uAC04, \uC5D0\uB108\uC9C0 \uBE44\uC6A9.",
-  "The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number.": "\uC18D\uC131 \uC788\uB294 \uC720\uB2DB \uC0DD\uC131 \uC2AC\uB86F(CUWP) 64\uAC1C, \uAC01 20\uBC14\uC774\uD2B8. \uC561\uC158\uC740 \uC2AC\uB86F \uBC88\uD638\uB85C \uAC00\uB9AC\uD0B5\uB2C8\uB2E4.",
-  "The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text.": "\uB9AC\uB9C8\uC2A4\uD130 \uBB38\uC790\uC5F4 \uD45C: STR\uACFC \uAC19\uC9C0\uB9CC \uAC1C\uC218\uC640 \uC624\uD504\uC14B\uC774 32\uBE44\uD2B8\uB77C \uB9F5\uC774 65,535\uBC14\uC774\uD2B8\uAC00 \uB118\uB294 \uD14D\uC2A4\uD2B8\uB97C \uB2F4\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
-  "The StarEdit version that wrote the file (11 for every release version).": "\uD30C\uC77C\uC744 \uC4F4 StarEdit \uBC84\uC804 (\uC815\uC2DD \uBC84\uC804\uC740 \uBAA8\uB450 11).",
-  "The StarEdit version that wrote the file (obsolete; 9 or 10). Not required.": "\uD30C\uC77C\uC744 \uC4F4 StarEdit \uBC84\uC804 (\uB354 \uC4F0\uC774\uC9C0 \uC54A\uC74C, 9 \uB610\uB294 10). \uD544\uC218\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
-  "The colour of each of the eight playable slots, as an index into the game's colour table.": "\uD50C\uB808\uC774 \uAC00\uB2A5\uD55C \uC5EC\uB35F \uC2AC\uB86F\uC758 \uC0C9, \uAC8C\uC784 \uC0C9 \uD45C\uC758 \uC778\uB371\uC2A4.",
+  "Switch names: 256 string numbers, 0 for an unnamed switch. Only editors read it.": "\uC2A4\uC704\uCE58 \uC774\uB984: \uBB38\uC790\uC5F4 \uBC88\uD638 256\uAC1C, \uC774\uB984 \uC5C6\uB294 \uC2A4\uC704\uCE58\uB294 0. \uC5D0\uB514\uD130\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Technology restrictions, Brood War layout (44 technologies). In a VER 59, 63 or 64 file the game reads it on top of PTEC.": "\uAE30\uC220 \uC81C\uD55C, \uBE0C\uB8E8\uB4DC \uC6CC \uD615\uC2DD (\uAE30\uC220 44\uAC1C). VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C\uB294 PTEC \uC704\uC5D0 \uB367\uBD99\uC5EC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Technology restrictions, original layout (24 technologies): per-player availability and researched state, defaults, and whether each player takes them. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read.": "\uAE30\uC220 \uC81C\uD55C, \uC624\uB9AC\uC9C0\uB110 \uD615\uC2DD (\uAE30\uC220 24\uAC1C): \uD50C\uB808\uC774\uC5B4\uBCC4 \uC0AC\uC6A9 \uAC00\uB2A5 \uC5EC\uBD80\uC640 \uC5F0\uAD6C \uC0C1\uD0DC, \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0. VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C \uC77D\uC73C\uBA70, \uBE0C\uB8E8\uB4DC \uC6CC \uD30C\uC77C\uC758 \uAC83\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "Technology settings, Brood War layout (44 technologies). In a VER 59, 63 or 64 file the game reads it on top of TECS.": "\uAE30\uC220 \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uD615\uC2DD (\uAE30\uC220 44\uAC1C). VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C\uB294 TECS \uC704\uC5D0 \uB367\uBD99\uC5EC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read.": "\uAE30\uC220 \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uD615\uC2DD (\uAE30\uC220 24\uAC1C): \uAE30\uBCF8\uAC12 \uC0AC\uC6A9, \uADF8\uB2E4\uC74C \uBBF8\uB124\uB784, \uAC00\uC2A4, \uC2DC\uAC04, \uC5D0\uB108\uC9C0 \uBE44\uC6A9. VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C \uC77D\uC73C\uBA70, \uBE0C\uB8E8\uB4DC \uC6CC \uD30C\uC77C\uC758 \uAC83\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "The 64 unit properties slots, 20 bytes each. Create Unit with Properties names a slot from 1 to 64, and so can plain Create Unit, in the same field.": "\uC720\uB2DB \uC18D\uC131 \uC2AC\uB86F 64\uAC1C, \uD558\uB098\uC5D0 20\uBC14\uC774\uD2B8. \uC18D\uC131 \uC9C0\uC815 \uC720\uB2DB \uC0DD\uC131\uC740 1\u201364\uC758 \uC2AC\uB86F\uC744 \uC9C0\uC815\uD558\uBA70, \uC77C\uBC18 Create Unit\uB3C4 \uAC19\uC740 \uD544\uB4DC\uC5D0\uC11C \uC9C0\uC815\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+  "The Remastered string table: like STR with a 32-bit count and offsets, so it has no 64 KB limit. Only Remastered reads it, and only in a VER 64 or 206 file, where it replaces STR whatever the order in the file.": "\uB9AC\uB9C8\uC2A4\uD130\uC758 \uBB38\uC790\uC5F4 \uD45C: STR\uACFC \uAC19\uC9C0\uB9CC \uAC1C\uC218\uC640 \uC624\uD504\uC14B\uC774 32\uBE44\uD2B8\uB77C 64 KB \uC81C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uB9AC\uB9C8\uC2A4\uD130\uB9CC, \uADF8\uB9AC\uACE0 VER 64\uB098 206 \uD30C\uC77C\uC5D0\uC11C\uB9CC \uC77D\uC73C\uBA70, \uADF8\uB54C\uB294 \uD30C\uC77C \uC548 \uC21C\uC11C\uC640 \uC0C1\uAD00\uC5C6\uC774 STR\uC744 \uB300\uC2E0\uD569\uB2C8\uB2E4.",
+  "The colours of Players 1 to 8. Each byte names a colour slot, 0 to 11, and the player takes the colour that slot had, so two players naming each other's slots swap colours. Read only in a VER 205 or 206 file.": "\uD50C\uB808\uC774\uC5B4 1\u20138\uC758 \uC0C9. \uAC01 \uBC14\uC774\uD2B8\uB294 \uC0C9 \uC2AC\uB86F(0\u201311)\uC744 \uAC00\uB9AC\uD0A4\uACE0, \uD50C\uB808\uC774\uC5B4\uB294 \uADF8 \uC2AC\uB86F\uC774 \uAC00\uC84C\uB358 \uC0C9\uC744 \uBC1B\uC2B5\uB2C8\uB2E4. \uADF8\uB798\uC11C \uB450 \uD50C\uB808\uC774\uC5B4\uAC00 \uC11C\uB85C\uC758 \uC2AC\uB86F\uC744 \uAC00\uB9AC\uD0A4\uBA74 \uC0C9\uC774 \uBC14\uB01D\uB2C8\uB2E4. VER 205\uB098 206 \uD30C\uC77C\uC5D0\uC11C\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
   "The editor decodes this section; an applied edit is read back into the map.": "\uC5D0\uB514\uD130\uAC00 \uC774 \uC139\uC158\uC744 \uD574\uC11D\uD569\uB2C8\uB2E4. \uC801\uC6A9\uD55C \uD3B8\uC9D1\uC740 \uB9F5\uC73C\uB85C \uB2E4\uC2DC \uC77D\uD799\uB2C8\uB2E4.",
   "The editor has no layout for this section; the bytes are shown as they are.": "\uC5D0\uB514\uD130\uC5D0 \uC774 \uC139\uC158\uC758 \uB808\uC774\uC544\uC6C3\uC774 \uC5C6\uC5B4 \uBC14\uC774\uD2B8\uB97C \uADF8\uB300\uB85C \uBCF4\uC5EC \uC90D\uB2C8\uB2E4.",
   "The editor has unsaved changes here; what you see is what Save would write.": "\uC5D0\uB514\uD130\uC5D0 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uBCF4\uC774\uB294 \uAC83\uC740 \uC800\uC7A5\uD558\uBA74 \uC4F0\uC77C \uB0B4\uC6A9\uC785\uB2C8\uB2E4.",
@@ -1535,45 +1550,50 @@ var KO = {
   "The editor keeps this section as bytes and writes it back unchanged.": "\uC5D0\uB514\uD130\uB294 \uC774 \uC139\uC158\uC744 \uBC14\uC774\uD2B8 \uADF8\uB300\uB85C \uB450\uC5C8\uB2E4\uAC00 \uBC14\uAFB8\uC9C0 \uC54A\uACE0 \uB2E4\uC2DC \uC501\uB2C8\uB2E4.",
   "The editor knows nothing about this section": "\uC5D0\uB514\uD130\uAC00 \uC774 \uC139\uC158\uC5D0 \uB300\uD574 \uC544\uB294 \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4",
   "The editor models this section: removing it changes what the map is.": "\uC5D0\uB514\uD130\uAC00 \uC774 \uC139\uC158\uC744 \uD574\uC11D\uD574 \uC501\uB2C8\uB2E4. \uC81C\uAC70\uD558\uBA74 \uB9F5\uC758 \uB0B4\uC6A9\uC774 \uBC14\uB01D\uB2C8\uB2E4.",
-  "The file format revision. Decides which settings sections the game reads.": "\uD30C\uC77C \uD615\uC2DD \uAC1C\uC815 \uBC88\uD638. \uAC8C\uC784\uC774 \uC5B4\uB290 \uC124\uC815 \uC139\uC158\uC744 \uC77D\uC744\uC9C0 \uC815\uD569\uB2C8\uB2E4.",
+  "The file's revision. The game reads it first, and it decides which sections the game reads next.": "\uD30C\uC77C\uC758 \uBC84\uC804. \uAC8C\uC784\uC774 \uAC00\uC7A5 \uBA3C\uC800 \uC77D\uC73C\uBA70, \uB2E4\uC74C\uC5D0 \uC5B4\uB5A4 \uC139\uC158\uC744 \uC77D\uC744\uC9C0 \uC815\uD569\uB2C8\uB2E4.",
+  "The game reads only 0x1000 and 0x8000. Editors call 0x4000 flipped, but it has no effect in play.": "\uAC8C\uC784\uC740 0x1000\uACFC 0x8000\uB9CC \uC77D\uC2B5\uB2C8\uB2E4. \uC5D0\uB514\uD130\uB294 0x4000\uC744 \uB4A4\uC9D1\uAE30\uB77C\uACE0 \uBD80\uB974\uC9C0\uB9CC \uAC8C\uC784\uC5D0\uC11C\uB294 \uC544\uBB34 \uD6A8\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
   "The game reads {n} bytes here": "\uAC8C\uC784\uC740 \uC5EC\uAE30\uC11C {n}\uBC14\uC774\uD2B8\uB97C \uC77D\uC2B5\uB2C8\uB2E4",
-  "The game's bookkeeping; StarEdit writes 0.": "\uAC8C\uC784\uC758 \uB0B4\uBD80 \uAE30\uB85D. StarEdit\uC740 0\uC744 \uC501\uB2C8\uB2E4.",
-  "The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it.": "StarEdit\uC758 \uC544\uC774\uC18C\uBA54\uD2B8\uB9AD \uBE0C\uB7EC\uC2DC\uAC00 \uB2E4\uB8E8\uB294 \uC544\uC774\uC18C\uBA54\uD2B8\uB9AD \uC9C0\uD615 \uACA9\uC790: \uB9C8\uB984\uBAA8\uB9C8\uB2E4 \uD55C \uCE78, \uCE78\uB9C8\uB2E4 \uAC00\uC7A5\uC790\uB9AC \uAC12 \uB124 \uAC1C. \uAC8C\uC784\uC740 \uBB34\uC2DC\uD569\uB2C8\uB2E4.",
-  "The map type: RAWS for an original or hybrid map, RAWB for Brood War.": "\uB9F5 \uC885\uB958: \uC624\uB9AC\uC9C0\uB110\uC774\uB098 \uD558\uC774\uBE0C\uB9AC\uB4DC \uB9F5\uC740 RAWS, \uBE0C\uB8E8\uB4DC \uC6CC\uB294 RAWB.",
+  "The game's bookkeeping: with flag 0x01 set, the next action to run. StarEdit writes 0.": "\uAC8C\uC784\uC758 \uAE30\uB85D\uC6A9: \uD50C\uB798\uADF8 0x01\uC774 \uCF1C\uC838 \uC788\uC73C\uBA74 \uB2E4\uC74C\uC5D0 \uC2E4\uD589\uD560 \uC561\uC158. StarEdit\uC740 0\uC744 \uC501\uB2C8\uB2E4.",
+  "The isometric terrain lattice the isometric brush works on: one rect per diamond, four edge values each. Only editors read it.": "\uC544\uC774\uC18C\uBA54\uD2B8\uB9AD \uBE0C\uB7EC\uC2DC\uAC00 \uB2E4\uB8E8\uB294 \uC9C0\uD615 \uACA9\uC790: \uB9C8\uB984\uBAA8\uB9C8\uB2E4 \uC0AC\uAC01\uD615 \uD558\uB098, \uAC01\uAC01 \uAC00\uC7A5\uC790\uB9AC \uAC12 \uB124 \uAC1C. \uC5D0\uB514\uD130\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "The map type: RAWS for a StarCraft file, RAWB for Brood War. The game looks for it but never reads what it holds.": "\uB9F5 \uC885\uB958: \uC2A4\uD0C0\uD06C\uB798\uD504\uD2B8 \uD30C\uC77C\uC740 RAWS, \uBE0C\uB8E8\uB4DC \uC6CC\uB294 RAWB. \uAC8C\uC784\uC740 \uC774 \uC139\uC158\uC744 \uCC3E\uAE30\uB294 \uD558\uC9C0\uB9CC \uB0B4\uC6A9\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
   "The parser said: {warnings}": "\uD30C\uC11C \uBA54\uC2DC\uC9C0: {warnings}",
-  "The race of each of the twelve player slots.": "\uC5F4\uB450 \uD50C\uB808\uC774\uC5B4 \uC2AC\uB86F\uC758 \uC885\uC871.",
+  "The race of each of the twelve player slots. In Use Map Settings, a User Selectable player gets melee starting units, and the units the map places for them are left out, all but the neutral kinds.": "\uC5F4\uB450 \uD50C\uB808\uC774\uC5B4 \uC2AC\uB86F \uAC01\uAC01\uC758 \uC885\uC871. \uC720\uC988\uB9F5 \uC138\uD305\uC5D0\uC11C \uC0AC\uC6A9\uC790 \uC120\uD0DD \uD50C\uB808\uC774\uC5B4\uB294 \uBC00\uB9AC \uC2DC\uC791 \uC720\uB2DB\uC744 \uBC1B\uACE0, \uB9F5\uC774 \uADF8 \uD50C\uB808\uC774\uC5B4\uC5D0\uAC8C \uBC30\uCE58\uD55C \uC720\uB2DB\uC740 \uC911\uB9BD \uC885\uB958\uB97C \uBE7C\uACE0 \uBAA8\uB450 \uBE60\uC9D1\uB2C8\uB2E4.",
   "The section's structure; click to jump": "\uC139\uC158\uC758 \uAD6C\uC870. \uD074\uB9AD\uD558\uBA74 \uC774\uB3D9\uD569\uB2C8\uB2E4",
+  "The serial of the linked unit: an add-on's building, or the other end of a nydus canal. The link holds only when both records name each other, in the same UNIT section.": "\uC5F0\uACB0\uB41C \uC720\uB2DB\uC758 \uC2DC\uB9AC\uC5BC: \uC560\uB4DC\uC628\uC774 \uBD99\uC740 \uAC74\uBB3C\uC774\uB098 \uB098\uC774\uB354\uC2A4 \uCEE4\uB110\uC758 \uB2E4\uB978 \uCABD \uB05D. \uB450 \uB808\uCF54\uB4DC\uAC00 \uAC19\uC740 UNIT \uC139\uC158 \uC548\uC5D0\uC11C \uC11C\uB85C\uB97C \uAC00\uB9AC\uD0AC \uB54C\uB9CC \uC5F0\uACB0\uB429\uB2C8\uB2E4.",
   "The size is a whole number of bytes.": "\uD06C\uAE30\uB294 \uBC14\uC774\uD2B8 \uB2E8\uC704\uC758 \uC815\uC218\uC785\uB2C8\uB2E4.",
-  "The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\\u2026). Play WAV actions store the string index itself.": "\uC0AC\uC6B4\uB4DC \uD45C: \uC544\uCE74\uC774\uBE0C \uC548 \uC0AC\uC6B4\uB4DC \uD30C\uC77C(staredit\\wav\\\u2026)\uC758 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 512\uAC1C. Play WAV \uC561\uC158\uC740 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 \uC790\uCCB4\uB97C \uC800\uC7A5\uD569\uB2C8\uB2E4.",
-  "The string indices of the scenario's name and description.": "\uC2DC\uB098\uB9AC\uC624 \uC774\uB984\uACFC \uC124\uBA85\uC758 \uBB38\uC790\uC5F4 \uC778\uB371\uC2A4.",
-  "The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string.": "\uBB38\uC790\uC5F4 \uD45C: 16\uBE44\uD2B8 \uAC1C\uC218, \uBB38\uC790\uC5F4\uB9C8\uB2E4 16\uBE44\uD2B8 \uC624\uD504\uC14B \uD558\uB098(\uC778\uB371\uC2A4\uB294 1\uBD80\uD130), \uADF8\uB2E4\uC74C NUL\uB85C \uB05D\uB098\uB294 latin-1 \uBB38\uC790\uC5F4. \uC778\uB371\uC2A4 0\uC740 \uBB38\uC790\uC5F4 \uC5C6\uC74C\uC785\uB2C8\uB2E4.",
-  "The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4).": "\uAC8C\uC784\uC774 \uADF8\uB9AC\uB294 \uC9C0\uD615: \uCE78\uB9C8\uB2E4 16\uBE44\uD2B8 \uD0C0\uC77C ID, \uD589 \uC21C\uC11C\uB300\uB85C, \uC7A5\uC2DD\uBB3C\uC774 \uCC0D\uD78C \uC0C1\uD0DC. ID\uB294 CV5 \uADF8\uB8F9(\uC0C1\uC704 12\uBE44\uD2B8)\uACFC \uADF8 \uC548\uC758 \uD0C0\uC77C(\uD558\uC704 4\uBE44\uD2B8)\uC785\uB2C8\uB2E4.",
+  "The special states themselves. A Ghost starts cloaked only if its owner has Personal Cloaking, and a Zerg unit burrowed only if its owner has Burrowing.": "\uD2B9\uC218 \uC0C1\uD0DC \uC790\uCCB4. \uACE0\uC2A4\uD2B8\uB294 \uC18C\uC720\uC790\uAC00 \uAC1C\uC778 \uC740\uD3D0\uB97C \uAC00\uC84C\uC744 \uB54C\uB9CC \uC740\uD3D0 \uC0C1\uD0DC\uB85C, \uC800\uADF8 \uC720\uB2DB\uC740 \uC18C\uC720\uC790\uAC00 \uBC84\uB85C\uC6B0\uB97C \uAC00\uC84C\uC744 \uB54C\uB9CC \uBC84\uB85C\uC6B0 \uC0C1\uD0DC\uB85C \uC2DC\uC791\uD569\uB2C8\uB2E4.",
+  "The special states. Cloaked and burrowed apply only if the owner has the ability that allows it.": "\uD2B9\uC218 \uC0C1\uD0DC. \uC740\uD3D0\uC640 \uBC84\uB85C\uC6B0\uB294 \uC18C\uC720\uC790\uAC00 \uADF8 \uB2A5\uB825\uC744 \uAC00\uC84C\uC744 \uB54C\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4.",
+  "The string numbers of the scenario's name and description. For a name of 0, past the table or empty, the map list shows the file name.": "\uC2DC\uB098\uB9AC\uC624 \uC774\uB984\uACFC \uC124\uBA85\uC758 \uBB38\uC790\uC5F4 \uBC88\uD638. \uC774\uB984\uC774 0\uC774\uAC70\uB098 \uD45C\uB97C \uB118\uC5B4\uC11C\uAC70\uB098 \uBE44\uC5B4 \uC788\uC73C\uBA74, \uB9F5 \uBAA9\uB85D\uC740 \uD30C\uC77C \uC774\uB984\uC744 \uBCF4\uC5EC \uC90D\uB2C8\uB2E4.",
+  "The string table: a 16-bit count, one 16-bit offset per string (string 1 first), then the text, each string ending in a 0 byte. Number 0 means no string. The table does not say how its bytes spell characters: StarEdit wrote the code page of its Windows, and Remastered reads each string as UTF-8, then Korean (CP949), then Windows-1252.": "\uBB38\uC790\uC5F4 \uD45C: 16\uBE44\uD2B8 \uAC1C\uC218, \uBB38\uC790\uC5F4\uB9C8\uB2E4 16\uBE44\uD2B8 \uC624\uD504\uC14B \uD558\uB098(\uBB38\uC790\uC5F4 1\uBD80\uD130), \uADF8\uB2E4\uC74C \uD14D\uC2A4\uD2B8\uC774\uBA70 \uAC01 \uBB38\uC790\uC5F4\uC740 0 \uBC14\uC774\uD2B8\uB85C \uB05D\uB0A9\uB2C8\uB2E4. \uBC88\uD638 0\uC740 \uBB38\uC790\uC5F4 \uC5C6\uC74C\uC785\uB2C8\uB2E4. \uD45C\uB294 \uBC14\uC774\uD2B8\uAC00 \uC5B4\uB5A4 \uBB38\uC790\uC778\uC9C0 \uC801\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4: StarEdit\uC740 \uC790\uAE30 Windows\uC758 \uCF54\uB4DC \uD398\uC774\uC9C0\uB85C \uC37C\uACE0, \uB9AC\uB9C8\uC2A4\uD130\uB294 \uBB38\uC790\uC5F4\uB9C8\uB2E4 UTF-8, \uADF8\uB2E4\uC74C \uD55C\uAD6D\uC5B4(CP949), \uADF8\uB2E4\uC74C Windows-1252\uB85C \uC77D\uC2B5\uB2C8\uB2E4.",
+  "The terrain the game draws: one 16-bit tile number per tile, row by row, doodads included. A number is a tile group times 16 plus a variation, 0 to 15; the top bit, 0x8000, takes no part. The game accepts up to 131,072 bytes and uses the first width \xD7 height tiles.": "\uAC8C\uC784\uC774 \uADF8\uB9AC\uB294 \uC9C0\uD615: \uD0C0\uC77C\uB9C8\uB2E4 16\uBE44\uD2B8 \uD0C0\uC77C \uBC88\uD638 \uD558\uB098, \uC904 \uC21C\uC11C\uB300\uB85C, \uC7A5\uC2DD\uBB3C \uD3EC\uD568. \uBC88\uD638\uB294 \uD0C0\uC77C \uADF8\uB8F9 \xD7 16 + \uBCC0\uD615(0\u201315)\uC774\uBA70, \uB9E8 \uC704 \uBE44\uD2B8 0x8000\uC740 \uC4F0\uC774\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uAC8C\uC784\uC740 131,072\uBC14\uC774\uD2B8\uAE4C\uC9C0 \uBC1B\uACE0 \uC55E\uC758 \uB108\uBE44 \xD7 \uB192\uC774 \uD0C0\uC77C\uC744 \uC501\uB2C8\uB2E4.",
   "The text, in offset order. A blob shared by several indices is listed once.": "\uC624\uD504\uC14B \uC21C\uC11C\uC758 \uD14D\uC2A4\uD2B8. \uC5EC\uB7EC \uC778\uB371\uC2A4\uAC00 \uD568\uAED8 \uC4F0\uB294 \uB369\uC5B4\uB9AC\uB294 \uD55C \uBC88\uB9CC \uB098\uC635\uB2C8\uB2E4.",
-  "The tileset, as a 16-bit value the game masks to its low three bits.": "\uD0C0\uC77C\uC14B. 16\uBE44\uD2B8 \uAC12\uC774\uBA70 \uAC8C\uC784\uC740 \uD558\uC704 3\uBE44\uD2B8\uB9CC \uBD05\uB2C8\uB2E4.",
-  "The unit this one is linked to (a Nydus exit, an add-on's building).": "\uC774 \uC720\uB2DB\uC774 \uC5F0\uACB0\uB41C \uC720\uB2DB (\uB098\uC774\uB354\uC2A4 \uCD9C\uAD6C, \uC560\uB4DC\uC628\uC758 \uAC74\uBB3C).",
-  "The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused.": "\uAC80\uC99D \uD45C: \uAC8C\uC784\uC774 \uB9F5 \uC139\uC158\uC744 \uD574\uC2DC\uD560 \uB54C \uC4F0\uB294 \uC2DC\uB4DC \uAC12 256\uAC1C\uC640 \uC5F0\uC0B0 \uCF54\uB4DC 16\uAC1C. StarEdit\uC740 \uBAA8\uB4E0 \uB9F5\uC5D0 \uAC19\uC740 \uD45C\uB97C \uC4F0\uACE0, \uB2E4\uB978 \uD45C\uAC00 \uB4E0 \uB9F5\uC740 \uAC70\uBD80\uB429\uB2C8\uB2E4.",
+  "The tileset. Brood War reads the low three bits; the original StarCraft refuses a value above 4. An Installation map can be played only as Use Map Settings.": "\uD0C0\uC77C\uC14B. \uBE0C\uB8E8\uB4DC \uC6CC\uB294 \uC544\uB798 \uC138 \uBE44\uD2B8\uB97C \uC77D\uACE0, \uC624\uB9AC\uC9C0\uB110 \uC2A4\uD0C0\uD06C\uB798\uD504\uD2B8\uB294 4\uBCF4\uB2E4 \uD070 \uAC12\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4. \uC778\uC2A4\uD1A8\uB808\uC774\uC158 \uB9F5\uC740 \uC720\uC988\uB9F5 \uC138\uD305\uC73C\uB85C\uB9CC \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+  "The verification table: 256 seeds and 16 operations. When it reads a map, the game hashes the player types (OWNR) and races (SIDE) with this table and with its own, and refuses the map when the answers differ. Nothing else in the map goes in. StarEdit writes the game's own table, the only one that passes for every set of players.": "\uAC80\uC99D \uD45C: \uC2DC\uB4DC 256\uAC1C\uC640 \uC5F0\uC0B0 16\uAC1C. \uAC8C\uC784\uC740 \uB9F5\uC744 \uC77D\uC744 \uB54C \uD50C\uB808\uC774\uC5B4 \uC885\uB958(OWNR)\uC640 \uC885\uC871(SIDE)\uC744 \uC774 \uD45C\uC640 \uC790\uAE30 \uD45C\uB85C \uAC01\uAC01 \uD574\uC2DC\uD558\uACE0, \uACB0\uACFC\uAC00 \uB2E4\uB974\uBA74 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4. \uB9F5\uC758 \uB2E4\uB978 \uB0B4\uC6A9\uC740 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. StarEdit\uC740 \uAC8C\uC784\uC758 \uD45C\uB97C \uADF8\uB300\uB85C \uC4F0\uBA70, \uC5B4\uB5A4 \uD50C\uB808\uC774\uC5B4 \uAD6C\uC131\uC5D0\uB3C4 \uD1B5\uACFC\uD558\uB294 \uD45C\uB294 \uADF8\uAC83\uBFD0\uC785\uB2C8\uB2E4.",
   "This rewrites the map and clears the undo history \u2014 there is no taking it back.": "\uB9F5\uC744 \uB2E4\uC2DC \uC4F0\uACE0 \uC2E4\uD589 \uCDE8\uC18C \uAE30\uB85D\uC744 \uC9C0\uC6C1\uB2C8\uB2E4. \uB418\uB3CC\uB9B4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
   "This section is empty. Insert a record or bytes from the inspector, or paste hex here.": "\uC774 \uC139\uC158\uC740 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uAC80\uC0AC\uAE30\uC5D0\uC11C \uB808\uCF54\uB4DC\uB098 \uBC14\uC774\uD2B8\uB97C \uB123\uAC70\uB098 \uC5EC\uAE30\uC5D0 16\uC9C4\uC218\uB97C \uBD99\uC5EC \uB123\uC73C\uC138\uC694.",
-  "Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte.": "\uD2B8\uB9AC\uAC70, \uAC01 2400\uBC14\uC774\uD2B8: \uC870\uAC74 16\uAC1C, \uC561\uC158 64\uAC1C, \uD50C\uB798\uADF8, \uD50C\uB808\uC774\uC5B4 \uADF8\uB8F9\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8, \uAC8C\uC784\uC758 \uD604\uC7AC \uC561\uC158 \uBC14\uC774\uD2B8.",
+  "Tiles past the map's width \xD7 height. The game uses only the first width \xD7 height, and refuses the map when the section is longer than 131,072 bytes.": "\uB9F5\uC758 \uB108\uBE44 \xD7 \uB192\uC774\uB97C \uB118\uC5B4\uC120 \uD0C0\uC77C\uC785\uB2C8\uB2E4. \uAC8C\uC784\uC740 \uC55E\uC758 \uB108\uBE44 \xD7 \uB192\uC774\uB9CC \uC4F0\uACE0, \uC139\uC158\uC774 131,072\uBC14\uC774\uD2B8\uBCF4\uB2E4 \uAE38\uBA74 \uB9F5\uC744 \uAC70\uBD80\uD569\uB2C8\uB2E4.",
+  "Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte. Only Use Map Settings runs them, but Remastered's map list reads them for every map.": "\uD2B8\uB9AC\uAC70, \uD558\uB098\uC5D0 2400\uBC14\uC774\uD2B8: \uC870\uAC74 16\uAC1C, \uC561\uC158 64\uAC1C, \uD50C\uB798\uADF8, \uD50C\uB808\uC774\uC5B4 \uADF8\uB8F9\uB9C8\uB2E4 \uD55C \uBC14\uC774\uD2B8, \uAC8C\uC784\uC758 \uD604\uC7AC \uC561\uC158 \uBC14\uC774\uD2B8. \uC720\uC988\uB9F5 \uC138\uD305\uC5D0\uC11C\uB9CC \uC2E4\uD589\uB418\uC9C0\uB9CC, \uB9AC\uB9C8\uC2A4\uD130\uC758 \uB9F5 \uBAA9\uB85D\uC740 \uBAA8\uB4E0 \uB9F5\uC5D0\uC11C \uC77D\uC2B5\uB2C8\uB2E4.",
   "Type hex digits in the byte column or characters in the text column to change it.": "\uBC14\uAFB8\uB824\uBA74 \uBC14\uC774\uD2B8 \uC5F4\uC5D0 16\uC9C4 \uC22B\uC790\uB97C, \uD14D\uC2A4\uD2B8 \uC5F4\uC5D0 \uAE00\uC790\uB97C \uC785\uB825\uD558\uC138\uC694.",
   "Undo": "\uC2E4\uD589 \uCDE8\uC18C",
   "Undo (Ctrl+Z in the hex view)": "\uC2E4\uD589 \uCDE8\uC18C (16\uC9C4 \uBCF4\uAE30\uC5D0\uC11C Ctrl+Z)",
   "Unique per unit within the map; Nydus and add-on links refer to it.": "\uB9F5 \uC548\uC5D0\uC11C \uC720\uB2DB\uB9C8\uB2E4 \uACE0\uC720\uD55C \uAC12. \uB098\uC774\uB354\uC2A4\uC640 \uC560\uB4DC\uC628 \uC5F0\uACB0\uC774 \uC774\uAC83\uC744 \uAC00\uB9AC\uD0B5\uB2C8\uB2E4.",
-  "Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default.": "\uC720\uB2DB \uC0AC\uC6A9 \uAC00\uB2A5 \uC5EC\uBD80: \uD50C\uB808\uC774\uC5B4\uC640 \uC720\uB2DB \uC885\uB958\uB9C8\uB2E4 \uC0DD\uC0B0\uD560 \uC218 \uC788\uB294\uC9C0, \uC885\uB958\uBCC4 \uC804\uCCB4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0.",
-  "Unit count (0 = all), set/add/subtract, switch action, state or order, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uC720\uB2DB \uC218(0 = \uC804\uBD80), \uC124\uC815/\uB354\uD558\uAE30/\uBE7C\uAE30, \uC2A4\uC704\uCE58 \uB3D9\uC791, \uC0C1\uD0DC \uB610\uB294 \uBA85\uB839.",
+  "Unit availability: for each player and unit type whether it can be built, a default per type, and whether each player takes the default. Only Use Map Settings reads it.": "\uC720\uB2DB \uC0AC\uC6A9 \uAC00\uB2A5 \uC5EC\uBD80: \uD50C\uB808\uC774\uC5B4\uC640 \uC720\uB2DB \uC885\uB958\uB9C8\uB2E4 \uB9CC\uB4E4 \uC218 \uC788\uB294\uC9C0, \uC885\uB958\uB9C8\uB2E4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0. \uC720\uC988\uB9F5 \uC138\uD305\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Unit count (0 = all, except Create Unit, where 0 makes one), set/add/subtract, switch action, state or order, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uC720\uB2DB \uC218 (0 = \uC804\uBD80. \uB2E8, Create Unit\uC5D0\uC11C\uB294 0\uC774\uBA74 \uD558\uB098\uB97C \uB9CC\uB4ED\uB2C8\uB2E4), \uC124\uC815/\uB354\uD558\uAE30/\uBE7C\uAE30, \uC2A4\uC704\uCE58 \uB3D9\uC791, \uC0C1\uD0DC \uB610\uB294 \uBA85\uB839.",
   "Unit id, resource, score type or alliance status, per type.": "\uC885\uB958\uC5D0 \uB530\uB77C \uC720\uB2DB ID, \uC790\uC6D0, \uC810\uC218 \uC885\uB958 \uB610\uB294 \uB3D9\uB9F9 \uC0C1\uD0DC.",
-  "Unit settings, Brood War layout: as UNIS with 130 weapons.": "\uC720\uB2DB \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3: UNIS\uC640 \uAC19\uACE0 \uBB34\uAE30\uAC00 130\uAC1C.",
-  "Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values.": "\uC720\uB2DB \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3: \uC720\uB2DB \uC885\uB958\uB9C8\uB2E4 \uAE30\uBCF8\uAC12 \uC0AC\uC6A9 \uBC14\uC774\uD2B8, \uCCB4\uB825(\xD7256), \uC2E4\uB4DC, \uBC29\uC5B4\uB825, \uC0DD\uC0B0 \uC2DC\uAC04, \uBE44\uC6A9, \uC774\uB984 \uBB38\uC790\uC5F4. \uADF8\uB2E4\uC74C \uBB34\uAE30 100\uAC1C\uC758 \uACF5\uACA9\uB825\uACFC \uCD94\uAC00 \uACF5\uACA9\uB825.",
+  "Unit settings, Brood War layout: as UNIS with 130 weapons. In a VER 59, 63 or 64 file the game reads it on top of UNIS.": "\uC720\uB2DB \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uD615\uC2DD: UNIS\uC640 \uAC19\uACE0 \uBB34\uAE30\uAC00 130\uAC1C. VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C\uB294 UNIS \uC704\uC5D0 \uB367\uBD99\uC5EC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs and name; then 100 weapons' damage and bonus. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read.": "\uC720\uB2DB \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uD615\uC2DD: \uC720\uB2DB \uC885\uB958\uB9C8\uB2E4 \uAE30\uBCF8\uAC12 \uC0AC\uC6A9 \uBC14\uC774\uD2B8, \uCCB4\uB825(\xD7256), \uC2E4\uB4DC, \uBC29\uC5B4\uB825, \uC0DD\uC0B0 \uC2DC\uAC04, \uBE44\uC6A9, \uC774\uB984. \uADF8\uB2E4\uC74C \uBB34\uAE30 100\uAC1C\uC758 \uACF5\uACA9\uB825\uACFC \uBCF4\uB108\uC2A4. VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C \uC77D\uC73C\uBA70, \uBE0C\uB8E8\uB4DC \uC6CC \uD30C\uC77C\uC758 \uAC83\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
   "Untitled": "\uC81C\uBAA9 \uC5C6\uC74C",
-  "Upgrade restrictions, Brood War layout (61 upgrades).": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC81C\uD55C, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 61\uAC1C).",
-  "Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC81C\uD55C, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 46\uAC1C): \uD50C\uB808\uC774\uC5B4\uBCC4 \uCD5C\uB300 \uB808\uBCA8\uACFC \uC2DC\uC791 \uB808\uBCA8, \uC804\uCCB4 \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0.",
-  "Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column).": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 61\uAC1C, \uAE30\uBCF8\uAC12 \uC0AC\uC6A9 \uC5F4 \uB4A4\uC5D0 \uCC44\uC6C0 \uBC14\uC774\uD2B8 \uD558\uB098).",
-  "Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uB808\uC774\uC544\uC6C3 (\uC5C5\uADF8\uB808\uC774\uB4DC 46\uAC1C): \uAE30\uBCF8\uAC12 \uC0AC\uC6A9, \uADF8\uB2E4\uC74C \uBBF8\uB124\uB784, \uAC00\uC2A4, \uC2DC\uAC04\uC758 \uAE30\uBCF8 \uBE44\uC6A9\uACFC \uB808\uBCA8\uB2F9 \uC99D\uAC00\uB7C9.",
+  "Unused.": "\uC4F0\uC774\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "Unused: the action's player owns the units.": "\uC4F0\uC774\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC720\uB2DB\uC758 \uC18C\uC720\uC790\uB294 \uC561\uC158\uC758 \uD50C\uB808\uC774\uC5B4\uC785\uB2C8\uB2E4.",
+  "Upgrade restrictions, Brood War layout (61 upgrades). In a VER 59, 63 or 64 file the game reads it on top of UPGR.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC81C\uD55C, \uBE0C\uB8E8\uB4DC \uC6CC \uD615\uC2DD (\uC5C5\uADF8\uB808\uC774\uB4DC 61\uAC1C). VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C\uB294 UPGR \uC704\uC5D0 \uB367\uBD99\uC5EC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Upgrade restrictions, original layout (46 upgrades): per-player highest and starting levels, defaults, and whether each player takes them. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC81C\uD55C, \uC624\uB9AC\uC9C0\uB110 \uD615\uC2DD (\uC5C5\uADF8\uB808\uC774\uB4DC 46\uAC1C): \uD50C\uB808\uC774\uC5B4\uBCC4 \uCD5C\uACE0 \uB2E8\uACC4\uC640 \uC2DC\uC791 \uB2E8\uACC4, \uAE30\uBCF8\uAC12, \uAC01 \uD50C\uB808\uC774\uC5B4\uAC00 \uAE30\uBCF8\uAC12\uC744 \uB530\uB974\uB294\uC9C0. VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C \uC77D\uC73C\uBA70, \uBE0C\uB8E8\uB4DC \uC6CC \uD30C\uC77C\uC758 \uAC83\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  "Upgrade settings, Brood War layout (61 upgrades, one unused byte after the use-default column). In a VER 59, 63 or 64 file the game reads it on top of UPGS.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC124\uC815, \uBE0C\uB8E8\uB4DC \uC6CC \uD615\uC2DD (\uC5C5\uADF8\uB808\uC774\uB4DC 61\uAC1C, \uAE30\uBCF8\uAC12 \uC0AC\uC6A9 \uC5F4 \uB4A4\uC5D0 \uC4F0\uC9C0 \uC54A\uB294 \uBC14\uC774\uD2B8 \uD558\uB098). VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C\uB294 UPGS \uC704\uC5D0 \uB367\uBD99\uC5EC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time costs for the first level and for each level after. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read.": "\uC5C5\uADF8\uB808\uC774\uB4DC \uC124\uC815, \uC624\uB9AC\uC9C0\uB110 \uD615\uC2DD (\uC5C5\uADF8\uB808\uC774\uB4DC 46\uAC1C): \uAE30\uBCF8\uAC12 \uC0AC\uC6A9, \uADF8\uB2E4\uC74C \uCCAB \uB2E8\uACC4\uC640 \uC774\uD6C4 \uB2E8\uACC4\uB9C8\uB2E4\uC758 \uBBF8\uB124\uB784, \uAC00\uC2A4, \uC2DC\uAC04 \uBE44\uC6A9. VER 59, 63, 64 \uD30C\uC77C\uC5D0\uC11C \uC77D\uC73C\uBA70, \uBE0C\uB8E8\uB4DC \uC6CC \uD30C\uC77C\uC758 \uAC83\uC740 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
   "Went to {target}.": "{target}(\uC73C)\uB85C \uC774\uB3D9\uD588\uC2B5\uB2C8\uB2E4.",
-  "Which of the 64 CUWP slots are in use (StarEdit's bookkeeping).": "CUWP \uC2AC\uB86F 64\uAC1C \uC911 \uC4F0\uC774\uB294 \uAC83 (StarEdit\uC758 \uB0B4\uBD80 \uAE30\uB85D).",
-  "Which of the fields below are set.": "\uC544\uB798 \uD544\uB4DC \uC911 \uC124\uC815\uB41C \uAC83.",
-  "Which special properties the game may read for this unit.": "\uAC8C\uC784\uC774 \uC774 \uC720\uB2DB\uC5D0\uC11C \uC77D\uC744 \uC218 \uC788\uB294 \uD2B9\uC218 \uC18D\uC131.",
-  "Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026": "\uC5F4\uB450 \uD50C\uB808\uC774\uC5B4 \uC2AC\uB86F\uC744 \uAC01\uAC01 \uB204\uAC00 \uC870\uC885\uD558\uB294\uC9C0: \uC0AC\uB78C, \uCEF4\uD4E8\uD130, \uAD6C\uCD9C \uAC00\uB2A5, \uC911\uB9BD, \u2026",
+  "Which of the 64 UPRP slots StarEdit considers in use. Only editors read it.": "UPRP \uC2AC\uB86F 64\uAC1C \uC911 StarEdit\uC774 \uC0AC\uC6A9 \uC911\uC73C\uB85C \uBCF4\uB294 \uAC83. \uC5D0\uB514\uD130\uB9CC \uC77D\uC2B5\uB2C8\uB2E4.",
+  "Which of the fields below the record sets. The game never reads the owner bit or 0x40: the owner byte always counts.": "\uC544\uB798 \uD544\uB4DC \uC911 \uB808\uCF54\uB4DC\uAC00 \uC815\uD558\uB294 \uAC83. \uAC8C\uC784\uC740 \uC18C\uC720\uC790 \uBE44\uD2B8\uC640 0x40\uC744 \uC77D\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC18C\uC720\uC790 \uBC14\uC774\uD2B8\uB294 \uD56D\uC0C1 \uC4F0\uC785\uB2C8\uB2E4.",
+  "Which special states the record sets. A state is applied only when its bit is set both here and in stateFlags.": "\uB808\uCF54\uB4DC\uAC00 \uC815\uD558\uB294 \uD2B9\uC218 \uC0C1\uD0DC. \uC0C1\uD0DC\uB294 \uC5EC\uAE30\uC640 stateFlags \uC591\uCABD\uC5D0 \uBE44\uD2B8\uAC00 \uCF1C\uC838 \uC788\uC744 \uB54C\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4.",
+  "Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026 The game does not check the values; with SIDE, it is what VCOD covers.": "\uC5F4\uB450 \uD50C\uB808\uC774\uC5B4 \uC2AC\uB86F\uC744 \uAC01\uAC01 \uB204\uAC00 \uC870\uC885\uD558\uB294\uC9C0: \uC0AC\uB78C, \uCEF4\uD4E8\uD130, \uAD6C\uC870 \uAC00\uB2A5, \uC911\uB9BD, \u2026 \uAC8C\uC784\uC740 \uAC12\uC744 \uAC80\uC0AC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. SIDE\uC640 \uD568\uAED8 VCOD\uAC00 \uAC80\uC0AC\uD558\uB294 \uB300\uC0C1\uC785\uB2C8\uB2E4.",
   "Write every changed section into the map": "\uBC14\uB010 \uC139\uC158\uC744 \uBAA8\uB450 \uB9F5\uC5D0 \uC501\uB2C8\uB2E4",
   "after the selected one": "\uC120\uD0DD\uD55C \uC139\uC158 \uB4A4",
   "at the end": "\uB05D\uC5D0",
@@ -1630,7 +1650,7 @@ var KO = {
   "{mode} on repeat": "\uBC18\uBCF5 \uC2DC {mode}",
   "{n, plural, one {# entry} other {# entries}}, {size} bytes": "\uD56D\uBAA9 {n}\uAC1C, {size}\uBC14\uC774\uD2B8",
   "{n, plural, one {# section has} other {# sections have}} changes you have not applied \u2014 Apply, Revert, or press Close again to drop them.": "\uC139\uC158 {n}\uAC1C\uC5D0 \uC801\uC6A9\uD558\uC9C0 \uC54A\uC740 \uBCC0\uACBD\uC774 \uC788\uC2B5\uB2C8\uB2E4. \uC801\uC6A9\uD558\uAC70\uB098 \uB418\uB3CC\uB9AC\uC138\uC694. \uBC84\uB9AC\uB824\uBA74 \uB2EB\uAE30\uB97C \uD55C \uBC88 \uB354 \uB204\uB974\uC138\uC694.",
-  "{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated.": "\uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 {list}, NUL\uB85C \uB05D\uB0A8.",
+  "{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated. The text box shows and edits one character per byte.": "\uBB38\uC790\uC5F4 \uC778\uB371\uC2A4 {list}, NUL\uB85C \uB05D\uB0A8. \uD14D\uC2A4\uD2B8 \uC0C1\uC790\uB294 \uBC14\uC774\uD2B8\uB9C8\uB2E4 \uD55C \uAE00\uC790\uB85C \uBCF4\uC5EC \uC8FC\uACE0 \uACE0\uCE69\uB2C8\uB2E4.",
   "{name} at {offset} \u2014 {what}": "{offset}\uC758 {name} \u2014 {what}",
   "{n} bytes": "{n}\uBC14\uC774\uD2B8",
   "{n} repeated": "{n}\uAC1C \uBC18\uBCF5",
@@ -1673,43 +1693,66 @@ var flags = (list) => ({
   }
 });
 var FIXED256 = { edit: "number", describe: (v) => `${v / 256}` };
+var USE_DEFAULT = { edit: "select", options: () => [{ value: 0, label: "0 \u2014 this section's values" }, { value: 1, label: "1 \u2014 the game's own" }], describe: (v) => v === 0 ? "this section's values" : "the game's own" };
+var USES_DEFAULTS = { edit: "select", options: () => [{ value: 0, label: "0 \u2014 the player's own" }, { value: 1, label: "1 \u2014 the defaults" }], describe: (v) => v === 0 ? "the player's own" : "the defaults" };
 var PX = { edit: "number", describe: (v) => `tile ${Math.floor(v / 32)}` };
 var TILE = {
   edit: "number",
   hex: true,
   describe: (v, ctx) => {
-    const name = ctx.names.tile(v);
-    return `group ${v >> 4}, tile ${v & 15}${name ? ` \u2014 ${name}` : ""}`;
+    const id = v & 32767;
+    const name = ctx.names.tile(id);
+    return `group ${id >> 4}, tile ${id & 15}${name ? ` \u2014 ${name}` : ""}${v & 32768 ? " (bit 15 set: no effect in play)" : ""}`;
   }
 };
 var TILESETS = ["Badlands", "Space Platform", "Installation", "Ashworld", "Jungle", "Desert", "Ice", "Twilight"];
-var ERA = { edit: "select", options: () => TILESETS.map((label, value) => ({ value, label })), describe: (v) => `${TILESETS[v & 7]}${v > 7 ? ` (only the low 3 bits count)` : ""}` };
+var ERA = {
+  edit: "select",
+  options: () => TILESETS.map((label, value) => ({ value, label })),
+  describe: (v) => `${TILESETS[v & 7]}${(v & 7) === 2 ? " (Use Map Settings only)" : ""}${v > 7 ? " (Brood War reads only the low 3 bits; the original StarCraft refuses it)" : v > 4 ? " (Brood War only)" : ""}`
+};
 var VER = {
   edit: "select",
-  options: () => [{ value: 59, label: "59 \u2014 StarCraft 1.00" }, { value: 63, label: "63 \u2014 Hybrid 1.04" }, { value: 205, label: "205 \u2014 Brood War 1.04" }, { value: 206, label: "206 \u2014 Remastered 1.21+" }],
-  describe: (v) => ({ 59: "StarCraft 1.00 (original)", 63: "Hybrid 1.04", 205: "Brood War 1.04", 206: "Remastered 1.21+" })[v] ?? "unknown revision"
+  options: () => [{ value: 59, label: "59 \u2014 StarCraft 1.00" }, { value: 63, label: "63 \u2014 Hybrid 1.04" }, { value: 205, label: "205 \u2014 Brood War 1.04" }, { value: 64, label: "64 \u2014 Remastered 1.21+ without Brood War" }, { value: 206, label: "206 \u2014 Remastered 1.21+" }],
+  describe: (v) => ({ 59: "StarCraft 1.00 (original)", 63: "Hybrid 1.04", 205: "Brood War 1.04", 64: "Remastered 1.21+ without Brood War (Remastered only)", 206: "Remastered 1.21+ (Remastered only)" })[v] ?? "a revision neither game knows: the map is refused"
 };
-var MAP_TYPE = { edit: "text", describe: (_v, _ctx, _s, text) => ({ RAWS: "StarCraft (original / hybrid)", RAWB: "Brood War" })[text ?? ""] ?? "unknown type" };
+var MAP_TYPE = { edit: "text", describe: (_v, _ctx, _s, text) => ({ RAWS: "StarCraft (original / hybrid)", RAWB: "Brood War" })[text ?? ""] ?? "unknown type (the game never reads it)" };
 var COLOR_NAMES = ["Red", "Blue", "Teal", "Purple", "Orange", "Brown", "White", "Yellow", "Green", "Pale Yellow", "Tan", "Dark Aqua", "Pale Green", "Bluish Grey", "Pale Yellow II", "Cyan", "Pink", "Olive", "Lime", "Navy", "Dark Green", "Black"];
-var COLOR = { edit: "select", options: () => COLOR_NAMES.map((label, value) => ({ value, label })), describe: (v) => COLOR_NAMES[v] ?? `colour ${v}` };
-var COLOR_MODE = { edit: "select", options: () => [{ value: 0, label: "Random" }, { value: 1, label: "Player choice" }, { value: 2, label: "Custom RGB" }, { value: 3, label: "Palette (COLR)" }], describe: (v) => ["Random", "Player choice", "Custom RGB", "Palette (COLR)"][v] ?? "?" };
+var COLR_SLOT = {
+  edit: "select",
+  options: () => COLOR_NAMES.slice(0, 12).map((label, value) => ({ value, label: `${value} \u2014 Player ${value + 1}'s slot (${label})` })),
+  describe: (v) => v < 12 ? `the colour of Player ${v + 1}'s slot (usually ${COLOR_NAMES[v]})` : "not a colour slot: 1.16.1 shows a wrong colour, Remastered keeps the usual one"
+};
+var COLOR_MODES = ["Random", "Player choice", "Custom RGB", "Palette"];
+var COLOR_MODE = {
+  edit: "select",
+  options: () => COLOR_MODES.map((label, value) => ({ value, label })),
+  describe: (v) => v < 3 ? COLOR_MODES[v] : v === 3 ? "Palette" : "Palette (any mode above 3)"
+};
 var FORCE = { edit: "select", options: () => [0, 1, 2, 3].map((i) => ({ value: i, label: `Force ${i + 1}` })), describe: (v) => `Force ${v + 1}` };
 var PERCENT = { edit: "number", describe: (v) => `${v}%` };
-var FRAMES = { edit: "number", describe: (v) => `${(v / 15).toFixed(1)} s at Fastest` };
-var MS = { edit: "number", describe: (v) => `${(v / 1e3).toFixed(2)} s` };
+var FRAMES = { edit: "number", describe: (v) => `${(v / 15).toFixed(1)} s at Normal, ${(v * 0.042).toFixed(1)} s at Fastest` };
 var UNIT_VALID_BITS = bits(["Cloak", "Burrow", "In transit", "Hallucinated", "Invincible"]);
-var UNIT_USED_BITS = bits(["Owner", "Hit points", "Shields", "Energy", "Resources", "Hangar", "State"]);
+var UNIT_USED_BITS = bits(["Owner (never read)", "Hit points", "Shields", "Energy", "Resources", "Hangar", "0x40 (never read)"]);
 var UNIT_STATE_BITS = bits(["Cloaked", "Burrowed", "In transit", "Hallucinated", "Invincible"]);
-var UNIT_RELATION_BITS = [{ bit: 512, label: "Nydus link" }, { bit: 1024, label: "Add-on" }];
-var SPRITE_FLAG_BITS = [{ bit: 4096, label: "Pure sprite (not a unit)" }, { bit: 16384, label: "Flipped" }, { bit: 32768, label: "Disabled" }];
+var UNIT_RELATION_BITS = [{ bit: 512, label: "Linked pair (ignored by the game)" }, { bit: 1024, label: "Add-on, in old references (ignored by the game)" }];
+var SPRITE_FLAG_BITS = [{ bit: 4096, label: "Pure sprite (not a unit)" }, { bit: 16384, label: "Flipped, to editors (no effect in play)" }, { bit: 32768, label: "Disabled (a unit sprite starts disabled)" }];
 var ELEVATION_BITS = bits(["Low ground excluded", "Medium ground excluded", "High ground excluded", "Low air excluded", "Medium air excluded", "High air excluded"]);
-var TRIGGER_FLAG_BITS = bits(["Conditions met (game)", "Ignore game end", "Preserve trigger", "Disabled", "Ignore display (game)", "Paused (game)", "Wait skip disabled (game)"]);
+var TRIGGER_FLAG_BITS = bits([
+  "Part way through its actions (game)",
+  "Counts as won: defeats the other players",
+  "Preserved",
+  "Disabled, or finished",
+  "Esc is skipping its Waits (game)",
+  "Paused the game (game)",
+  "Esc may not skip it (game)"
+]);
 var CONDITION_FLAG_BITS = bits(["Unknown (game)", "Disabled", "Always display", "Unit properties used", "Unit type used", "Unit id used"]);
 var ACTION_FLAG_BITS = bits(["Ignore wait once (game)", "Disabled", "Always display", "Unit properties used", "Unit type used", "Unit id used"]);
 var FORCE_FLAG_BITS = bits(["Random start location", "Allies", "Allied victory", "Shared vision"]);
 var MASK_BITS = bits(Array.from({ length: 8 }, (_, i) => `Player ${i + 1} starts unexplored`));
 var CUWP_VALID_BITS = bits(["Cloak", "Burrow", "In transit", "Hallucinated", "Invincible"]);
-var CUWP_ELEMENT_BITS = bits(["Owner", "Hit points", "Shields", "Energy", "Resources", "Hangar", "State"]);
+var CUWP_ELEMENT_BITS = bits(["Owner (unused)", "Hit points", "Shields", "Energy", "Resources", "Hangar"]);
 var CONDITION_ARGS = {
   1: ["cmp", "camount"],
   2: ["player", "unit", "cmp", "camount"],
@@ -1749,7 +1792,7 @@ var ACTION_ARGS = {
   11: ["player", "unit", "count", "location", "cuwp"],
   12: ["text"],
   13: ["switch", "switchAction"],
-  14: ["modifier", "time"],
+  14: ["modifier", "seconds"],
   15: ["aiScript"],
   16: ["aiScript", "location"],
   17: ["text", "unit"],
@@ -1779,7 +1822,7 @@ var ACTION_ARGS = {
   41: ["text"],
   42: ["player", "unit", "location", "unitState"],
   43: ["player", "unit", "location", "unitState"],
-  44: ["player", "unit", "count", "location"],
+  44: ["player", "unit", "count", "location", "createSlot"],
   45: ["player", "unit", "modifier", "amount"],
   46: ["player", "unit", "location", "location2", "order"],
   47: ["text"],
@@ -1813,6 +1856,8 @@ var ORDERS = { 0: "Move", 1: "Patrol", 2: "Attack" };
 var ALLIANCES = { 0: "Enemy", 1: "Ally", 2: "Allied victory" };
 var RESOURCES = { 0: "Ore", 1: "Gas", 2: "Ore and gas" };
 var SCORES = { 0: "Total", 1: "Units", 2: "Buildings", 3: "Units and buildings", 4: "Kills", 5: "Razings", 6: "Kills and razings", 7: "Custom" };
+var CREATES = /* @__PURE__ */ new Set([11, 44]);
+var propertiesSlot = (v) => v >= 1 && v <= 64 ? `properties slot ${v}` : v === 0 ? "no properties slot" : `no properties slot (${v} is not 1\u201364)`;
 var loc = (ctx, v) => v === 0 ? "no location" : ctx.names.location(v - 1);
 function argText(arg, s, ctx) {
   switch (arg) {
@@ -1822,8 +1867,10 @@ function argText(arg, s, ctx) {
       return `to ${ctx.names.playerGroup(s("target"))}`;
     case "unit":
       return ctx.names.unit(s("unitId"));
-    case "count":
-      return s("modifier") === 0 ? "all" : `\xD7${s("modifier")}`;
+    case "count": {
+      const n = s("modifier");
+      return n !== 0 ? `\xD7${n}` : CREATES.has(s("type")) ? "\xD71 (0 makes one)" : "all";
+    }
     case "location":
       return `at ${loc(ctx, s("location"))}`;
     case "location2":
@@ -1836,6 +1883,8 @@ function argText(arg, s, ctx) {
     }
     case "time":
       return `${s("time")} ms`;
+    case "seconds":
+      return `${s("time")} s`;
     case "modifier":
       return MODIFIERS[s("modifier")] ?? `modifier ${s("modifier")}`;
     case "amount":
@@ -1859,7 +1908,8 @@ function argText(arg, s, ctx) {
     case "aiScript":
       return ctx.names.aiScript(s("target"));
     case "cuwp":
-      return `properties slot ${s("target")}`;
+    case "createSlot":
+      return propertiesSlot(s("target"));
     case "cmp":
       return { 0: "at least", 1: "at most", 10: "exactly" }[s("comparison")] ?? "?";
     case "camount":
@@ -1887,7 +1937,7 @@ var perType = (table, mine, fallback) => ({
 var TYPE_LOOKUP = (table, name) => (s, ctx) => {
   const t2 = s("type");
   if (t2 === 0) return "(empty slot)";
-  const args = (table[t2] ?? []).map((a) => argText(a, s, ctx));
+  const args = (table[t2] ?? []).filter((a) => a !== "createSlot" || s("target") !== 0).map((a) => argText(a, s, ctx));
   return `${name(t2, ctx)}${args.length ? ` \u2014 ${args.join(", ")}` : ""}`;
 };
 var UNIT_RECORD = struct("Unit", [
@@ -1895,18 +1945,18 @@ var UNIT_RECORD = struct("Unit", [
   u16("x", PX, msg("Centre, in map pixels.")),
   u16("y", PX, msg("Centre, in map pixels.")),
   u16("unitId", UNIT, msg("units.dat id.")),
-  u16("relationType", flags(UNIT_RELATION_BITS), msg("How relatedSerial is linked.")),
-  u16("validProperties", flags(UNIT_VALID_BITS), msg("Which special properties the game may read for this unit.")),
-  u16("validStates", flags(UNIT_USED_BITS), msg("Which of the fields below are set.")),
+  u16("relationType", flags(UNIT_RELATION_BITS), msg("Link flags editors write. The game never reads them: it links an add-on to its building, or a nydus canal to its exit, only when each of the two records names the other's serial.")),
+  u16("validProperties", flags(UNIT_VALID_BITS), msg("Which special states the record sets. A state is applied only when its bit is set both here and in stateFlags.")),
+  u16("validStates", flags(UNIT_USED_BITS), msg("Which of the fields below the record sets. The game never reads the owner bit or 0x40: the owner byte always counts.")),
   u8("owner", PLAYER),
-  u8("hitPoints", PERCENT),
+  u8("hitPoints", PERCENT, msg("Per cent of the unit's maximum, and capped at it.")),
   u8("shields", PERCENT),
   u8("energy", PERCENT),
-  u32("resources", NUM, msg("Minerals or gas held by a resource unit.")),
-  u16("hangar", NUM, msg("Interceptors or Scarabs.")),
-  u16("stateFlags", flags(UNIT_STATE_BITS)),
+  u32("resources", NUM, msg("Minerals or gas held by a resource unit. The game keeps only the low 16 bits, so 70,000 becomes 4,464.")),
+  u16("hangar", NUM, msg("Interceptors or Scarabs. Read only for Carriers, Reavers and their heroes: the low byte, and no more than the unit can hold.")),
+  u16("stateFlags", flags(UNIT_STATE_BITS), msg("The special states themselves. A Ghost starts cloaked only if its owner has Personal Cloaking, and a Zerg unit burrowed only if its owner has Burrowing.")),
   u32("unused", HEX),
-  u32("relatedSerial", HEX, msg("The unit this one is linked to (a Nydus exit, an add-on's building)."))
+  u32("relatedSerial", HEX, msg("The serial of the linked unit: an add-on's building, or the other end of a nydus canal. The link holds only when both records name each other, in the same UNIT section."))
 ], { summary: (r, ctx) => `${ctx.names.unit(r("unitId"))} \u2014 ${ctx.names.player(r("owner"))} at (${r("x")}, ${r("y")})` });
 var SPRITE_RECORD = struct("Sprite", [
   u16("spriteId", { edit: "number", describe: (v, ctx, s) => s("flags") & 4096 ? `sprites.dat #${v}` : `unit: ${ctx.names.unit(v)}` }, msg("A sprites.dat id for a pure sprite; a units.dat id when the pure-sprite flag is off (doors, traps).")),
@@ -1914,7 +1964,7 @@ var SPRITE_RECORD = struct("Sprite", [
   u16("y", PX),
   u8("owner", PLAYER),
   u8("unused", HEX),
-  u16("flags", flags(SPRITE_FLAG_BITS))
+  u16("flags", flags(SPRITE_FLAG_BITS), msg("The game reads only 0x1000 and 0x8000. Editors call 0x4000 flipped, but it has no effect in play."))
 ], { summary: (r, ctx) => `${r("flags") & 4096 ? `sprite #${r("spriteId")}` : ctx.names.unit(r("spriteId"))} at (${r("x")}, ${r("y")})` });
 var DOODAD_RECORD = struct("Doodad", [
   u16("doodadId", NUM, msg("Index into the tileset's dddata.bin.")),
@@ -1939,29 +1989,29 @@ var CONDITION_RECORD = struct("Condition", [
   u8("comparison", COMPARISON),
   u8("type", CONDITION_TYPE),
   u8("resource", perType(CONDITION_ARGS, ["cresource", "cscore", "cswitch"], "unused for this type"), msg("Resource, score type or switch number, per type.")),
-  u8("flags", flags(CONDITION_FLAG_BITS)),
+  u8("flags", flags(CONDITION_FLAG_BITS), msg("0x02 disables the condition; the other bits are editor and game bookkeeping.")),
   u16("mask", HEX, msg("EUD mask; 0 in ordinary maps."))
 ], { summary: (r, ctx) => TYPE_LOOKUP(CONDITION_ARGS, (t2, c) => c.names.condition(t2))(r, ctx) });
 var actionRecord = (briefing) => struct("Action", [
   u32("location", LOCATION1),
   u32("text", STRING),
   u32("wav", STRING),
-  u32("time", MS),
+  u32("time", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["time", "seconds"], "unused for this type"), msg("Milliseconds, or seconds for Set Countdown Timer.")),
   u32("player", PLAYER_GROUP),
-  u32("target", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["player2", "location2", "amount", "percent", "switch", "aiScript", "cuwp", "slot"], "unused for this type"), msg("Second player, destination location, amount, switch, AI script or properties slot, per type.")),
+  u32("target", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["player2", "location2", "amount", "percent", "switch", "aiScript", "cuwp", "createSlot", "slot"], "unused for this type"), msg("Second player, destination location, amount, switch, AI script or properties slot, per type. Create Unit reads a properties slot here too: 1 to 64 uses that slot, anything else none.")),
   u16("unitId", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["unit", "resource", "score", "alliance"], "unused for this type"), msg("Unit id, resource, score type or alliance status, per type.")),
   u8("type", briefing ? BRIEFING_TYPE : ACTION_TYPE),
-  u8("modifier", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["count", "modifier", "switchAction", "unitState", "order"], "unused for this type"), msg("Unit count (0 = all), set/add/subtract, switch action, state or order, per type.")),
-  u8("flags", flags(ACTION_FLAG_BITS)),
+  u8("modifier", perType(briefing ? BRIEFING_ARGS : ACTION_ARGS, ["count", "modifier", "switchAction", "unitState", "order"], "unused for this type"), msg("Unit count (0 = all, except Create Unit, where 0 makes one), set/add/subtract, switch action, state or order, per type.")),
+  u8("flags", flags(ACTION_FLAG_BITS), msg("0x02 disables the action and 0x04 always displays its text; the other bits are editor and game bookkeeping.")),
   u8("padding", HEX),
   u16("mask", HEX, msg("EUD mask; 0 in ordinary maps."))
 ], { summary: (r, ctx) => TYPE_LOOKUP(briefing ? BRIEFING_ARGS : ACTION_ARGS, (t2, c) => c.names.action(t2, briefing))(r, ctx) });
 var triggerRecord = (briefing) => struct(briefing ? "Briefing" : "Trigger", [
   array("conditions", CONDITION_RECORD, 16, { colors: "cycle", item: (i) => `condition ${i}` }),
   array("actions", actionRecord(briefing), 64, { colors: "cycle", item: (i) => `action ${i}` }),
-  u32("flags", flags(TRIGGER_FLAG_BITS)),
+  u32("flags", flags(TRIGGER_FLAG_BITS), msg("0x02 makes the player count as having won each time the actions run: every other player still in the game is defeated, and the player plays on. The game sets 0x01, 0x10, 0x20 and 0x40 itself while the trigger runs; StarEdit saves them as 0, but a file that sets them is obeyed.")),
   array("players", u8("runs for", BOOL), 27, { item: (i, ctx) => ctx.names.playerGroup(i), doc: msg("One byte per player group; non-zero means the trigger runs for that group.") }),
-  u8("currentAction", NUM, msg("The game's bookkeeping; StarEdit writes 0."))
+  u8("currentAction", NUM, msg("The game's bookkeeping: with flag 0x01 set, the next action to run. StarEdit writes 0."))
 ], {
   summary: (_r, ctx, data, start) => {
     const conditions = [];
@@ -1982,57 +2032,57 @@ var triggerRecord = (briefing) => struct(briefing ? "Briefing" : "Trigger", [
 var CUWP_RECORD = struct("Unit properties", [
   u16("validSpecialProperties", flags(CUWP_VALID_BITS)),
   u16("validElements", flags(CUWP_ELEMENT_BITS)),
-  u8("owner", PLAYER),
+  u8("owner", PLAYER, msg("Unused: the action's player owns the units.")),
   u8("hitPoints", PERCENT),
   u8("shields", PERCENT),
   u8("energy", PERCENT),
-  u32("resources", NUM),
-  u16("hangar", NUM),
-  u16("flags", flags(UNIT_STATE_BITS)),
+  u32("resources", NUM, msg("Only the low 16 bits are kept.")),
+  u16("hangar", NUM, msg("Only the low byte is kept.")),
+  u16("flags", flags(UNIT_STATE_BITS), msg("The special states. Cloaked and burrowed apply only if the owner has the ability that allows it.")),
   u32("unused", HEX)
 ]);
 var SECTION_DOCS = {
-  "TYPE": msg("The map type: RAWS for an original or hybrid map, RAWB for Brood War."),
-  "VER ": msg("The file format revision. Decides which settings sections the game reads."),
-  "IVER": msg("The StarEdit version that wrote the file (obsolete; 9 or 10). Not required."),
-  "IVE2": msg("The StarEdit version that wrote the file (11 for every release version)."),
-  "VCOD": msg("The verification table: 256 seed values and 16 operation codes the game hashes the map's sections with. StarEdit writes the same table into every map; a map with a different one is refused."),
-  "IOWN": msg("StarEdit's copy of the player controllers. The game reads OWNR."),
-  "OWNR": msg("Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026"),
-  "ERA ": msg("The tileset, as a 16-bit value the game masks to its low three bits."),
-  "DIM ": msg("Map width and height in tiles."),
-  "SIDE": msg("The race of each of the twelve player slots."),
-  "MTXM": msg("The terrain the game draws: one 16-bit tile id per cell, row by row, doodads stamped in. An id is a CV5 group (high 12 bits) and a tile within it (low 4)."),
-  "PUNI": msg("Unit availability: for each player and unit type whether it can be built, a global default per type, and whether each player follows the default."),
-  "UPGR": msg("Upgrade restrictions, original layout (46 upgrades): per-player maximum and start levels, global defaults, and whether each player uses them."),
-  "PTEC": msg("Technology restrictions, original layout (24 technologies): per-player availability and researched state, global defaults, and whether each player uses them."),
-  "UNIT": msg("Placed units, 36 bytes each, in the order they were placed."),
-  "ISOM": msg("The isometric terrain lattice StarEdit's isometric brush works on: one cell per diamond, four edge values each. The game ignores it."),
-  "TILE": msg("StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. The game ignores it."),
-  "DD2 ": msg("Placed doodads, 8 bytes each. The game never reads this; it sees the tiles in MTXM and the overlay sprites in THG2."),
-  "THG2": msg("Sprites, 10 bytes each: pure sprites (a sprites.dat id with the pure flag) and unit sprites (doors and traps by units.dat id), plus doodad overlays."),
-  "MASK": msg("Fog of war: one byte per cell, one bit per player 1\u20138, set where that player starts unexplored. A map without MASK is fully fogged."),
-  "STR ": msg("The string table: a 16-bit count, one 16-bit offset per string (1-based indices), then NUL-terminated latin-1 strings. Index 0 means no string."),
-  "STRx": msg("The Remastered string table: like STR with 32-bit count and offsets, so a map may carry more than 65,535 bytes of text."),
-  "UPRP": msg("The 64 Create Unit with Properties slots (CUWP), 20 bytes each; the action refers to them by slot number."),
-  "UPUS": msg("Which of the 64 CUWP slots are in use (StarEdit's bookkeeping)."),
-  "MRGN": msg("Locations, 20 bytes each: 64 slots in an original map, 255 in Brood War. Slot 63 is Anywhere."),
-  "TRIG": msg("Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte."),
-  "MBRF": msg("Mission briefings: the same record as TRIG with briefing action types."),
-  "SPRP": msg("The string indices of the scenario's name and description."),
-  "FORC": msg("Forces: which force each of the eight playable slots belongs to, the four force names, and per-force flags."),
-  "WAV ": msg("The sound table: 512 string indices of the sound files in the archive (staredit\\wav\\\u2026). Play WAV actions store the string index itself."),
-  "UNIS": msg("Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs, name string; then 100 weapon damage and bonus values."),
-  "UPGS": msg("Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time base costs and per-level factors."),
-  "TECS": msg("Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs."),
-  "SWNM": msg("Switch names: 256 string indices, 0 for an unnamed switch."),
-  "COLR": msg("The colour of each of the eight playable slots, as an index into the game's colour table."),
-  "PUPx": msg("Upgrade restrictions, Brood War layout (61 upgrades)."),
-  "PTEx": msg("Technology restrictions, Brood War layout (44 technologies)."),
-  "UNIx": msg("Unit settings, Brood War layout: as UNIS with 130 weapons."),
-  "UPGx": msg("Upgrade settings, Brood War layout (61 upgrades, one pad byte after the use-default column)."),
-  "TECx": msg("Technology settings, Brood War layout (44 technologies)."),
-  "CRGB": msg("Remastered player colours: an RGB triple per playable slot, then a mode byte per slot saying whether the game uses it, the lobby choice, a random colour or COLR.")
+  "TYPE": msg("The map type: RAWS for a StarCraft file, RAWB for Brood War. The game looks for it but never reads what it holds."),
+  "VER ": msg("The file's revision. The game reads it first, and it decides which sections the game reads next."),
+  "IVER": msg("An older StarEdit version stamp. Only editors read it, and StarEdit no longer writes it."),
+  "IVE2": msg("StarEdit's version stamp (11 in a map StarEdit saves for Brood War). Only editors read it."),
+  "VCOD": msg("The verification table: 256 seeds and 16 operations. When it reads a map, the game hashes the player types (OWNR) and races (SIDE) with this table and with its own, and refuses the map when the answers differ. Nothing else in the map goes in. StarEdit writes the game's own table, the only one that passes for every set of players."),
+  "IOWN": msg("StarEdit's copy of the player types. The game reads OWNR, never this."),
+  "OWNR": msg("Who controls each of the twelve player slots: human, computer, rescuable, neutral, \u2026 The game does not check the values; with SIDE, it is what VCOD covers."),
+  "ERA ": msg("The tileset. Brood War reads the low three bits; the original StarCraft refuses a value above 4. An Installation map can be played only as Use Map Settings."),
+  "DIM ": msg("Map width and height in tiles. The game checks the section's length, not the values; Remastered refuses a side above 256."),
+  "SIDE": msg("The race of each of the twelve player slots. In Use Map Settings, a User Selectable player gets melee starting units, and the units the map places for them are left out, all but the neutral kinds."),
+  "MTXM": msg("The terrain the game draws: one 16-bit tile number per tile, row by row, doodads included. A number is a tile group times 16 plus a variation, 0 to 15; the top bit, 0x8000, takes no part. The game accepts up to 131,072 bytes and uses the first width \xD7 height tiles."),
+  "PUNI": msg("Unit availability: for each player and unit type whether it can be built, a default per type, and whether each player takes the default. Only Use Map Settings reads it."),
+  "UPGR": msg("Upgrade restrictions, original layout (46 upgrades): per-player highest and starting levels, defaults, and whether each player takes them. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
+  "PTEC": msg("Technology restrictions, original layout (24 technologies): per-player availability and researched state, defaults, and whether each player takes them. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
+  "UNIT": msg("Placed units, 36 bytes each. When a game starts, start locations make no unit, units of a player not in the game are dropped, and melee keeps only Player 12's resources and critters. Start locations come from the last UNIT section alone."),
+  "ISOM": msg("The isometric terrain lattice the isometric brush works on: one rect per diamond, four edge values each. Only editors read it."),
+  "TILE": msg("StarEdit's copy of the terrain without doodads: what is under each doodad. Same layout as MTXM. Only editors read it."),
+  "DD2 ": msg("Placed doodads, 8 bytes each. Only editors read it; the game sees a doodad as its tiles in MTXM and its sprite in THG2."),
+  "THG2": msg("Sprites, 10 bytes each. A pure sprite (flag 0x1000) is a picture: a tree top, a glow, a doodad's overlay. Without it the record is a unit sprite, which the game makes into a unit of that type: doors and traps. A unit sprite is made only in Use Map Settings or for Player 12."),
+  "MASK": msg("Fog of war: one byte per tile, one bit per player 1\u20138, set where that player starts unexplored. Only Use Map Settings reads it, and it needs it: without MASK a Use Map Settings game does not start. Tiles past the end of a short MASK start unexplored."),
+  "STR ": msg("The string table: a 16-bit count, one 16-bit offset per string (string 1 first), then the text, each string ending in a 0 byte. Number 0 means no string. The table does not say how its bytes spell characters: StarEdit wrote the code page of its Windows, and Remastered reads each string as UTF-8, then Korean (CP949), then Windows-1252."),
+  "STRx": msg("The Remastered string table: like STR with a 32-bit count and offsets, so it has no 64 KB limit. Only Remastered reads it, and only in a VER 64 or 206 file, where it replaces STR whatever the order in the file."),
+  "UPRP": msg("The 64 unit properties slots, 20 bytes each. Create Unit with Properties names a slot from 1 to 64, and so can plain Create Unit, in the same field."),
+  "UPUS": msg("Which of the 64 UPRP slots StarEdit considers in use. Only editors read it."),
+  "MRGN": msg("Locations, 20 bytes each: exactly 64 in a VER 59 file and 255 from VER 63 up; any other length refuses the map. Slot 63, counting from 0, is Anywhere, which triggers store as location 64. The game takes each box as stored, so one with its edges swapped never finds units."),
+  "TRIG": msg("Triggers, 2400 bytes each: 16 conditions, 64 actions, flags, one byte per player group and the game's current-action byte. Only Use Map Settings runs them, but Remastered's map list reads them for every map."),
+  "MBRF": msg("Mission briefings: the same record as TRIG with briefing action types. Without it, or at a length that is not whole records, the map plays without a briefing."),
+  "SPRP": msg("The string numbers of the scenario's name and description. For a name of 0, past the table or empty, the map list shows the file name."),
+  "FORC": msg("Forces: which force each of Players 1 to 8 belongs to, the four force names, and per-force flags. A shorter section is filled out with zeros; a longer one refuses the map."),
+  "WAV ": msg("StarEdit's list of the sound files in the archive (staredit\\wav\\\u2026): 512 string numbers. The game never reads it; Play WAV and Transmission store the string number of their sound themselves."),
+  "UNIS": msg("Unit settings, original layout: per unit type a use-default byte, hit points (\xD7256), shields, armour, build time, costs and name; then 100 weapons' damage and bonus. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
+  "UPGS": msg("Upgrade settings, original layout (46 upgrades): use-default, then mineral, gas and time costs for the first level and for each level after. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
+  "TECS": msg("Technology settings, original layout (24 technologies): use-default, then mineral, gas, time and energy costs. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
+  "SWNM": msg("Switch names: 256 string numbers, 0 for an unnamed switch. Only editors read it."),
+  "COLR": msg("The colours of Players 1 to 8. Each byte names a colour slot, 0 to 11, and the player takes the colour that slot had, so two players naming each other's slots swap colours. Read only in a VER 205 or 206 file."),
+  "PUPx": msg("Upgrade restrictions, Brood War layout (61 upgrades). In a VER 59, 63 or 64 file the game reads it on top of UPGR."),
+  "PTEx": msg("Technology restrictions, Brood War layout (44 technologies). In a VER 59, 63 or 64 file the game reads it on top of PTEC."),
+  "UNIx": msg("Unit settings, Brood War layout: as UNIS with 130 weapons. In a VER 59, 63 or 64 file the game reads it on top of UNIS."),
+  "UPGx": msg("Upgrade settings, Brood War layout (61 upgrades, one unused byte after the use-default column). In a VER 59, 63 or 64 file the game reads it on top of UPGS."),
+  "TECx": msg("Technology settings, Brood War layout (44 technologies). In a VER 59, 63 or 64 file the game reads it on top of TECS."),
+  "CRGB": msg("Remastered's player colours: three bytes per player, then a mode per player. Random and Player choice ignore the bytes; Custom uses them as red, green and blue; Palette (3, or any mode above) takes the third byte as a colour number, 0 to 21, and in a VER 205 or 206 file COLR is applied over it.")
 };
 var UNIT_TYPES = 228;
 var PLAYERS = 12;
@@ -2040,11 +2090,19 @@ var perUnit = (of, label, doc) => array(label, of, UNIT_TYPES, { item: (i, ctx) 
 var perUpgrade = (of, label, n, doc) => array(label, of, n, { item: (i, ctx) => ctx.names.upgrade(i), doc });
 var perTech = (of, label, n, doc) => array(label, of, n, { item: (i, ctx) => ctx.names.tech(i), doc });
 var perPlayer = (of, label, doc) => array(label, of, PLAYERS, { item: (i, ctx) => ctx.names.player(i), doc });
-var perWeapon = (of, label, n) => array(label, of, n, { item: (i, ctx) => ctx.names.weapon(i) });
+var perWeapon = (of, label, n, doc) => array(label, of, n, { item: (i, ctx) => ctx.names.weapon(i), doc });
 var cell = (i, ctx) => `(${ctx.width ? i % ctx.width : i}, ${ctx.width ? Math.floor(i / ctx.width) : 0})`;
+var crgbSummary = (r, _ctx, data, start) => {
+  const mode = data[24 + Math.floor(start / 3)] ?? 0;
+  const hex2 = `#${[r("r"), r("g"), r("b")].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+  if (mode === 2) return `${hex2} (Custom)`;
+  if (mode >= 3) return `Palette: ${COLOR_NAMES[r("b")] ?? `colour ${r("b")}`} (the third byte)`;
+  return `${mode === 0 ? "Random" : "Player choice"}: the bytes are not used`;
+};
+var PALETTE_BYTE = { edit: "number", describe: (v) => `blue for Custom; for Palette, ${COLOR_NAMES[v] ?? `colour ${v}`}` };
 function unitSettings(weapons) {
   return struct("Unit settings", [
-    perUnit(u8("useDefault", BOOL), "useDefault", msg("1 = the game uses units.dat / weapons.dat for this type.")),
+    perUnit(u8("useDefault", USE_DEFAULT), "useDefault", msg("0 = this section's values for the type; anything else = the game's own, and the rest of the section is ignored for it, the name included.")),
     perUnit(u32("hitPoints", FIXED256), "hitPoints", msg("Hit points \xD7 256.")),
     perUnit(u16("shields", NUM), "shields"),
     perUnit(u8("armor", NUM), "armor"),
@@ -2052,14 +2110,14 @@ function unitSettings(weapons) {
     perUnit(u16("minerals", NUM), "minerals"),
     perUnit(u16("gas", NUM), "gas"),
     perUnit(u16("name", STRING), "name", msg("String index of a custom name, 0 for the default.")),
-    perWeapon(u16("damage", NUM), "weaponDamage", weapons),
+    perWeapon(u16("damage", NUM), "weaponDamage", weapons, msg("Set only while the game sets up a unit type that fires the weapon and does not use the game's own values; a unit with a turret takes its weapons from the turret.")),
     perWeapon(u16("bonus", NUM), "weaponBonus", weapons)
   ]);
 }
 function upgradeSettings(n, pad) {
   return struct("Upgrade settings", [
-    perUpgrade(u8("useDefault", BOOL), "useDefault", n),
-    ...pad ? [u8("pad", HEX, msg("Alignment byte."))] : [],
+    perUpgrade(u8("useDefault", USE_DEFAULT), "useDefault", n, msg("0 = this section's values; anything else = the game's own.")),
+    ...pad ? [u8("pad", HEX, msg("Unused."))] : [],
     perUpgrade(u16("mineralBase", NUM), "mineralBase", n),
     perUpgrade(u16("mineralFactor", NUM), "mineralFactor", n),
     perUpgrade(u16("gasBase", NUM), "gasBase", n),
@@ -2070,7 +2128,7 @@ function upgradeSettings(n, pad) {
 }
 function techSettings(n) {
   return struct("Technology settings", [
-    perTech(u8("useDefault", BOOL), "useDefault", n),
+    perTech(u8("useDefault", USE_DEFAULT), "useDefault", n, msg("0 = this section's values; anything else = the game's own.")),
     perTech(u16("minerals", NUM), "minerals", n),
     perTech(u16("gas", NUM), "gas", n),
     perTech(u16("time", FRAMES), "time", n),
@@ -2083,7 +2141,7 @@ function upgradeRestrictions(n) {
     perPlayer(perUpgrade(u8("startLevel", NUM), "start level", n), "playerStartLevel"),
     perUpgrade(u8("defaultMax", NUM), "defaultMaxLevel", n),
     perUpgrade(u8("defaultStart", NUM), "defaultStartLevel", n),
-    perPlayer(perUpgrade(u8("usesDefault", BOOL), "uses default", n), "playerUsesDefault")
+    perPlayer(perUpgrade(u8("usesDefault", USES_DEFAULTS), "uses default", n), "playerUsesDefault")
   ]);
 }
 function techRestrictions(n) {
@@ -2092,7 +2150,7 @@ function techRestrictions(n) {
     perPlayer(perTech(u8("researched", BOOL), "researched", n), "playerResearched"),
     perTech(u8("defaultAvailable", BOOL), "defaultAvailable", n),
     perTech(u8("defaultResearched", BOOL), "defaultResearched", n),
-    perPlayer(perTech(u8("usesDefault", BOOL), "uses default", n), "playerUsesDefault")
+    perPlayer(perTech(u8("usesDefault", USES_DEFAULTS), "uses default", n), "playerUsesDefault")
   ]);
 }
 function schemaFor(name, ctx) {
@@ -2131,7 +2189,7 @@ function schemaFor(name, ctx) {
       return struct("Unit availability", [
         perPlayer(perUnit(u8("available", BOOL), "can build"), "playerAvailable"),
         perUnit(u8("defaultAvailable", BOOL), "defaultAvailable"),
-        perPlayer(perUnit(u8("usesDefault", BOOL), "uses default"), "playerUsesDefault")
+        perPlayer(perUnit(u8("usesDefault", USES_DEFAULTS), "uses default"), "playerUsesDefault")
       ]);
     case "UPGR":
       return upgradeRestrictions(46);
@@ -2170,10 +2228,10 @@ function schemaFor(name, ctx) {
     case "SWNM":
       return array("Switch names", u32("name", STRING), 256, { item: (i) => `Switch ${i + 1}` });
     case "COLR":
-      return array("Colours", u8("colour", COLOR), 8, { item: (i, c) => c.names.player(i) });
+      return array("Colours", u8("colour", COLR_SLOT), 8, { item: (i, c) => c.names.player(i) });
     case "CRGB":
       return struct("Remastered colours", [
-        array("rgb", struct("RGB", [u8("r", NUM), u8("g", NUM), u8("b", NUM)], { summary: (r) => `#${[r("r"), r("g"), r("b")].map((c) => c.toString(16).padStart(2, "0")).join("")}` }), 8, { item: (i, c) => c.names.player(i) }),
+        array("rgb", struct("RGB", [u8("r", NUM), u8("g", NUM), u8("b", PALETTE_BYTE)], { summary: crgbSummary }), 8, { item: (i, c) => c.names.player(i) }),
         array("mode", u8("mode", COLOR_MODE), 8, { item: (i, c) => c.names.player(i) })
       ]);
     default:
@@ -2225,8 +2283,8 @@ function stringTable(bytes, env, wide) {
     while (end < bytes.length && bytes[end] !== 0) end++;
     const indices = users.get(off);
     return leaf(`#${indices[0]}${indices.length > 1 ? ` (+${indices.length - 1})` : ""}`, off, Math.min(bytes.length, end + 1) - off, "chars", {
-      doc: t("{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated.", { n: indices.length, list: indices.join(", ") }),
-      semantic: { edit: "text" },
+      doc: t("{n, plural, one {String index {list}} other {String indexes {list}}}, NUL-terminated. The text box shows and edits one character per byte.", { n: indices.length, list: indices.join(", ") }),
+      semantic: { edit: "text", describe: () => readsAs(bytes, off, end, env.ctx.encoding) },
       color: blobs.indexOf(off) % 8
     });
   });
@@ -2241,16 +2299,96 @@ function stringTable(bytes, env, wide) {
   }), width, env, 1, 0);
   offsets.child = /* @__PURE__ */ ((inner) => (i) => {
     const n = inner(i);
-    n.semantic = { edit: "number", hex: true, describe: (v) => v < bytes.length ? `\u2192 ${quote(readNul(bytes, v))}` : "past the end" };
+    n.semantic = { edit: "number", hex: true, describe: (v) => v < bytes.length ? `\u2192 ${quote(readNul(bytes, v, env.ctx.encoding))}` : "past the end: no string" };
     return n;
   })(offsets.child);
   return sequence(wide ? "String table (32-bit)" : "String table", [header, offsets, strings]);
 }
-var readNul = (bytes, at) => {
+function decodeText(bytes, from, to, encoding) {
+  const slice = bytes.subarray(from, to);
+  if (encoding) {
+    try {
+      return new TextDecoder(encoding).decode(slice);
+    } catch {
+    }
+  }
   let s = "";
-  for (let i = at; i < bytes.length && bytes[i] !== 0; i++) s += String.fromCharCode(bytes[i]);
+  for (const b of slice) s += String.fromCharCode(b);
   return s;
+}
+var nulFrom = (bytes, at) => {
+  let end = at;
+  while (end < bytes.length && bytes[end] !== 0) end++;
+  return end;
 };
+var readNul = (bytes, at, encoding) => decodeText(bytes, at, nulFrom(bytes, at), encoding);
+function readsAs(bytes, from, to, encoding) {
+  if (!encoding || bytes.subarray(from, to).every((b) => b < 128)) return "";
+  return `reads as ${quote(decodeText(bytes, from, to, encoding), 64)} (${encoding})`;
+}
+var LENGTH_RULES = {
+  "VER ": "exact",
+  "VCOD": "exact",
+  "OWNR": "exact",
+  "ERA ": "exact",
+  "DIM ": "exact",
+  "SIDE": "exact",
+  "PUNI": "exact",
+  "UPGR": "exact",
+  "PTEC": "exact",
+  "UPRP": "exact",
+  "MRGN": "exact",
+  "SPRP": "exact",
+  "UNIS": "exact",
+  "UPGS": "exact",
+  "TECS": "exact",
+  "COLR": "exact",
+  "PUPx": "exact",
+  "PTEx": "exact",
+  "UNIx": "exact",
+  "UPGx": "exact",
+  "TECx": "exact",
+  "CRGB": "exact",
+  "TYPE": "any",
+  "MASK": "any",
+  "STR ": "any",
+  "STRx": "any",
+  "IVER": "editors",
+  "IVE2": "editors",
+  "IOWN": "editors",
+  "ISOM": "editors",
+  "TILE": "editors",
+  "DD2 ": "editors",
+  "UPUS": "editors",
+  "WAV ": "editors",
+  "SWNM": "editors",
+  "FORC": "atMost",
+  "UNIT": "records",
+  "THG2": "records",
+  "TRIG": "records",
+  "MBRF": "briefings",
+  "MTXM": "terrain"
+};
+function trailingDoc(name) {
+  switch (LENGTH_RULES[name]) {
+    case "exact":
+      return msg("Bytes past the end of the layout. The game takes this section only at exactly its size: with these bytes it refuses the map.");
+    case "atMost":
+      return msg("Bytes past the end of the layout. The game takes this section up to its size and fills a short one with zeros, but a longer one refuses the map.");
+    case "records":
+      return msg("Bytes past the last whole record. The game takes only whole records here: a length like this refuses the map.");
+    case "briefings":
+      return msg("Bytes past the last whole briefing. With a length like this the map plays without a briefing.");
+    case "terrain":
+      return msg("Tiles past the map's width \xD7 height. The game uses only the first width \xD7 height, and refuses the map when the section is longer than 131,072 bytes.");
+    case "editors":
+      return msg("Bytes past the end of the layout. Only editors read this section, so they make no difference to the game.");
+    case "any":
+      return msg("Bytes past the end of the layout. The game accepts this section at any length and does not use them.");
+    default:
+      return msg("Bytes past the end of the layout.");
+  }
+}
 function sectionLayout(name, bytes, ctx) {
   const env = { bytes: () => bytes, ctx };
   let root;
@@ -2271,7 +2409,7 @@ function sectionLayout(name, bytes, ctx) {
   }
   root.doc = root.doc ?? SECTION_DOCS[name];
   if (root.size < bytes.length) {
-    const rest = leaf("trailing bytes", root.size, bytes.length - root.size, "bytes", { doc: msg("Bytes past the end of the layout. The game ignores what it does not read."), color: 7 });
+    const rest = leaf("trailing bytes", root.size, bytes.length - root.size, "bytes", { doc: trailingDoc(name), color: 7 });
     const seq = sequence(root.label, [root, rest], root.doc);
     return seq;
   }
@@ -2504,7 +2642,7 @@ var Explorer = class _Explorer {
   }
   ctx() {
     const info = this.api.document.info();
-    return { names: this.api.names, width: info?.width ?? 0, height: info?.height ?? 0 };
+    return { names: this.api.names, width: info?.width ?? 0, height: info?.height ?? 0, encoding: this.api.settings.version()?.textEncoding };
   }
   layout() {
     const buf = this.buffer();

@@ -54,6 +54,8 @@ export interface Ctx {
   names: Names;
   width: number;
   height: number;
+  /** The encoding the editor reads the map's text in (a TextDecoder label); latin-1 when absent. */
+  encoding?: string;
 }
 
 /** Sibling values of a leaf, by field label, for meanings that depend on another field (an action's type). */

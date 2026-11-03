@@ -114,7 +114,7 @@ describe("sectionLayout", () => {
     expect(pathAt(root, 44).map((n) => n.label)).toEqual(["Units", "Units", "unit 1", "unitId"]);
     expect(leafText(root, bytes, 4)).toEqual({ value: 96, text: "96", meaning: "tile 3" });
     expect(leafText(root, bytes, 12).meaning).toBe("Cloak, Burrow, In transit, Hallucinated, Invincible");
-    expect(leafText(root, bytes, 14).meaning).toBe("Owner, Hit points, Shields, Energy, Resources, Hangar, State");
+    expect(leafText(root, bytes, 14).meaning).toBe("Owner (never read), Hit points, Shields, Energy, Resources, Hangar, 0x40 (never read)");
     expect(leafText(root, bytes, 73).text).toBe("3 bytes");
     // Bytes past the end of the section are not in any leaf.
     expect(leafAt(root, 75)).toBeNull();
@@ -163,7 +163,7 @@ describe("sectionLayout", () => {
     const r2 = sectionLayout("STR ", shared, ctx)!;
     expect(r2.child!(2).count).toBe(1);
     expect(r2.child!(2).child!(0).label).toBe("#1 (+1)");
-    expect(leafText(r2, shared, 6).meaning).toBe("past the end");
+    expect(leafText(r2, shared, 6).meaning).toBe("past the end: no string");
     const wide = sectionLayout("STRx", new Uint8Array([...le32(1), ...le32(8), 72, 105, 0]), ctx)!;
     expect(wide.child!(2).child!(0)).toMatchObject({ start: 8, size: 3 });
   });
@@ -188,11 +188,24 @@ describe("sectionLayout", () => {
     // The modifier byte's meaning follows the action's type.
     expect(leafText(root, bytes, 320 + 27)).toEqual({ value: 5, text: "5", meaning: "×5" });
     expect(leafText(root, bytes, 320 + 24).meaning).toBe("Terran Marine");
-    expect(leafText(root, bytes, 320 + 20).meaning).toBe("unused for this type");
+    expect(leafText(root, bytes, 320 + 20).meaning).toBe("no properties slot");
     expect(leafText(root, bytes, 15)).toEqual({ value: 3, text: "3", meaning: "Bring" });
-    expect(leafText(root, bytes, 2368).meaning).toBe("Preserve trigger");
+    expect(leafText(root, bytes, 2368).meaning).toBe("Preserved");
     expect(pathAt(root, 2372 + 17).map((n) => n.label)).toEqual(["Triggers", "trigger 0", "players", "All Players"]);
     expect(leafText(root, bytes, 2372 + 17).meaning).toBe("yes");
+    // The game's reading of the record, where older references differ.
+    bytes[2368] = 0x02;
+    expect(leafText(root, bytes, 2368).meaning).toBe("Counts as won: defeats the other players");
+    bytes[320 + 27] = 0; // Create Unit with a count of 0 makes one
+    bytes.set(le32(3), 320 + 20); // and reads a properties slot
+    expect(actions.child!(0).summary!()).toBe("Create Unit — Player 1, Terran Marine, ×1 (0 makes one), at Location 0, properties slot 3");
+    bytes[320 + 26] = 23; // Kill Unit At Location: 0 is all
+    expect(leafText(root, bytes, 320 + 27).meaning).toBe("all");
+    bytes.set([...le32(30)], 320 + 12); bytes[320 + 26] = 14; bytes[320 + 27] = 7; // Set Countdown Timer: seconds
+    expect(leafText(root, bytes, 320 + 12).meaning).toBe("30 s");
+    bytes[320 + 26] = 4; // Wait: milliseconds
+    expect(leafText(root, bytes, 320 + 12).meaning).toBe("30 ms");
+    bytes[320 + 26] = 44; bytes[320 + 27] = 5;
     const brief = sectionLayout("MBRF", bytes, ctx)!;
     expect(brief.child!(0).child!(1).child!(0).summary!()).toContain("Briefing 44");
   });
@@ -208,7 +221,7 @@ describe("sectionLayout", () => {
     const ver = sectionLayout("VER ", new Uint8Array([205, 0]), ctx)!;
     expect(leafText(ver, new Uint8Array([205, 0]), 0).meaning).toBe("Brood War 1.04");
     const era = sectionLayout("ERA ", new Uint8Array([12, 0]), ctx)!;
-    expect(leafText(era, new Uint8Array([12, 0]), 0).meaning).toBe("Jungle (only the low 3 bits count)");
+    expect(leafText(era, new Uint8Array([12, 0]), 0).meaning).toBe("Jungle (Brood War reads only the low 3 bits; the original StarCraft refuses it)");
     const unix = sectionLayout("UNIx", new Uint8Array(4168), ctx)!;
     expect(unix.count).toBe(10);
     expect(unix.child!(1).child!(0).label).toBe("Terran Marine");
@@ -218,12 +231,48 @@ describe("sectionLayout", () => {
     const pupx = sectionLayout("PUPx", new Uint8Array(2318), ctx)!;
     expect(pupx.size).toBe(2318);
     const crgb = sectionLayout("CRGB", new Uint8Array([255, 0, 128, ...new Array(21).fill(0), 2, 3, 3, 3, 3, 3, 3, 3]), ctx)!;
-    expect(crgb.child!(0).child!(0).summary!()).toBe("#ff0080");
+    expect(crgb.child!(0).child!(0).summary!()).toBe("#ff0080 (Custom)");
     expect(leafText(crgb, new Uint8Array([255, 0, 128, ...new Array(21).fill(0), 2, 3, 3, 3, 3, 3, 3, 3]), 24).meaning).toBe("Custom RGB");
+    // A Palette entry's third byte is a colour number; Random and Player choice ignore the bytes.
+    const modes = new Uint8Array([255, 0, 128, 0, 0, 16, 9, 9, 9, ...new Array(15).fill(0), 2, 3, 0, 1, 3, 3, 3, 7]);
+    const crgb2 = sectionLayout("CRGB", modes, ctx)!;
+    expect(crgb2.child!(0).child!(1).summary!()).toBe("Palette: Pink (the third byte)");
+    expect(crgb2.child!(0).child!(2).summary!()).toBe("Random: the bytes are not used");
+    expect(leafText(crgb2, modes, 31).meaning).toBe("Palette (any mode above 3)");
+    // A COLR byte names a colour slot, 0 to 11.
+    const colr = new Uint8Array([1, 0, 2, 3, 4, 5, 6, 12]);
+    const colrRoot = sectionLayout("COLR", colr, ctx)!;
+    expect(leafText(colrRoot, colr, 0).meaning).toBe("the colour of Player 2's slot (usually Blue)");
+    expect(leafText(colrRoot, colr, 7).meaning).toContain("not a colour slot");
+    const ver64 = new Uint8Array([64, 0]);
+    expect(leafText(sectionLayout("VER ", ver64, ctx)!, ver64, 0).meaning).toBe("Remastered 1.21+ without Brood War (Remastered only)");
+    // Bit 15 of a tile number takes no part in the group.
+    const tile = new Uint8Array([...le16(0x8023), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    expect(leafText(sectionLayout("MTXM", tile, ctx)!, tile, 0).meaning).toBe("group 2, tile 3 — Dirt (bit 15 set: no effect in play)");
     expect(sectionLayout("ZZZZ", new Uint8Array(3), ctx)).toBeNull();
     // A section shorter than its layout keeps the layout; the reader answers 0 past the end.
     const short = sectionLayout("DIM ", new Uint8Array([4, 0]), ctx)!;
     expect(short.size).toBe(4);
     expect(readPrim(new Uint8Array([4, 0]), "u16", 2, 2)).toBe(0);
+  });
+
+  it("says what the game does with bytes past the layout", () => {
+    const tail = (name: string, bytes: Uint8Array) => sectionLayout(name, bytes, ctx)!.child!(1);
+    expect(tail("VER ", new Uint8Array(3)).doc).toContain("refuses the map");
+    expect(tail("UNIT", new Uint8Array(37)).doc).toContain("only whole records");
+    expect(tail("MBRF", new Uint8Array(2401)).doc).toContain("without a briefing");
+    expect(tail("FORC", new Uint8Array(21)).doc).toContain("a longer one refuses the map");
+    expect(tail("SWNM", new Uint8Array(1025)).doc).toContain("Only editors read this section");
+    expect(tail("MASK", new Uint8Array(9)).doc).toContain("any length");
+  });
+
+  it("reads the string table's text in the map's encoding", () => {
+    // "한" in EUC-KR is C7 D1.
+    const bytes = new Uint8Array([...le16(1), ...le16(4), 0xc7, 0xd1, 0]);
+    const korean = { ...ctx, encoding: "euc-kr" };
+    const root = sectionLayout("STR ", bytes, korean)!;
+    expect(leafText(root, bytes, 2).meaning).toBe('→ "한"');
+    const blob = root.child!(2).child!(0);
+    expect(describeLeaf(blob, bytes, korean, () => 0).meaning).toBe('reads as "한" (euc-kr)');
   });
 });
