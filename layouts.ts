@@ -58,10 +58,22 @@ export const USE_DEFAULT: Semantic = { edit: "select", options: () => [{ value: 
 /** A per-player uses-the-defaults byte: 0 takes the player's own values, anything else the defaults. */
 export const USES_DEFAULTS: Semantic = { edit: "select", options: () => [{ value: 0, label: "0 — the player's own" }, { value: 1, label: "1 — the defaults" }], describe: (v) => (v === 0 ? "the player's own" : "the defaults") };
 export const PX: Semantic = { edit: "number", describe: (v) => `tile ${Math.floor(v / 32)}` };
-/** A tile number: group × 16 + variation. The game reads the group from bits 4–14; bit 15 takes no part. */
+/** Groups a tile number can name while bit 15 is not part of the group: the game's tilesets have fewer. */
+const CLASSIC_TILE_GROUPS = 0x800;
+/**
+ * A tile number: group × 16 + variation. The game reads the group from bits 4–14; bit 15
+ * takes no part. A tileset of more than 2,048 groups (a mod's extended one) reads the group
+ * from all twelve bits 4–15, as the editor draws it.
+ */
 export const TILE: Semantic = {
   edit: "number", hex: true,
-  describe: (v, ctx) => { const id = v & 0x7fff; const name = ctx.names.tile(id); return `group ${id >> 4}, tile ${id & 0xf}${name ? ` — ${name}` : ""}${v & 0x8000 ? " (bit 15 set: no effect in play)" : ""}`; },
+  describe: (v, ctx) => {
+    const wide = (ctx.tileGroups ?? 0) > CLASSIC_TILE_GROUPS;
+    const id = wide ? v & 0xffff : v & 0x7fff;
+    const name = ctx.names.tile(id);
+    const note = !(v & 0x8000) ? "" : wide ? ` (bit 15 is part of the group: the tileset has ${ctx.tileGroups!.toLocaleString("en-US")} groups)` : " (bit 15 set: no effect in play)";
+    return `group ${id >> 4}, tile ${id & 0xf}${name ? ` — ${name}` : ""}${note}`;
+  },
 };
 export const AI_SCRIPT: Semantic = { edit: "number", hex: true, describe: (v, ctx) => `"${aiChars(v)}" — ${ctx.names.aiScript(v)}` };
 const aiChars = (code: number) => String.fromCharCode(code & 0xff, (code >>> 8) & 0xff, (code >>> 16) & 0xff, (code >>> 24) & 0xff).replace(/[^\x20-\x7e]/g, ".");
@@ -305,7 +317,7 @@ export const SECTION_DOCS: Record<string, string> = {
   "ERA ": msg("The tileset. Brood War reads the low three bits; the original StarCraft refuses a value above 4. An Installation map can be played only as Use Map Settings."),
   "DIM ": msg("Map width and height in tiles. The game checks the section's length, not the values; Remastered refuses a side above 256."),
   "SIDE": msg("The race of each of the twelve player slots. In Use Map Settings, a User Selectable player gets melee starting units, and the units the map places for them are left out, all but the neutral kinds."),
-  "MTXM": msg("The terrain the game draws: one 16-bit tile number per tile, row by row, doodads included. A number is a tile group times 16 plus a variation, 0 to 15; the top bit, 0x8000, takes no part. The game accepts up to 131,072 bytes and uses the first width × height tiles."),
+  "MTXM": msg("The terrain the game draws: one 16-bit tile number per tile, row by row, doodads included. A number is a tile group times 16 plus a variation, 0 to 15; the top bit, 0x8000, takes no part, except on a mod's tileset of more than 2,048 groups, where it is part of the group. The game accepts up to 131,072 bytes and uses the first width × height tiles."),
   "PUNI": msg("Unit availability: for each player and unit type whether it can be built, a default per type, and whether each player takes the default. Only Use Map Settings reads it."),
   "UPGR": msg("Upgrade restrictions, original layout (46 upgrades): per-player highest and starting levels, defaults, and whether each player takes them. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
   "PTEC": msg("Technology restrictions, original layout (24 technologies): per-player availability and researched state, defaults, and whether each player takes them. Read in a VER 59, 63 or 64 file; a Brood War file's copy is never read."),
