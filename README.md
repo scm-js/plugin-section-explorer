@@ -107,6 +107,11 @@ what older references say, the inspector says what the game does. A section with
 (an unknown name, or junk left by a map protector) is shown as plain bytes and can be edited
 the same way.
 
+A tile number in `MTXM` or `TILE` is a group and a variation. On the game's tilesets the
+group is bits 4–14 and bit 15 has no effect in play. A mod's tileset with more than 2,048
+groups uses bit 15 for the group too, and the inspector reads the twelve bits the way the
+editor draws them.
+
 ## Development
 
 ```sh

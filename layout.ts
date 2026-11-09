@@ -56,6 +56,12 @@ export interface Ctx {
   height: number;
   /** The encoding the editor reads the map's text in (a TextDecoder label); latin-1 when absent. */
   encoding?: string;
+  /**
+   * How many CV5 groups the map's tileset has, when its graphics are loaded. Past 2,048 (a
+   * mod's extended tileset) a tile's group is all twelve bits above the variation, bit 15
+   * included; absent, the game's own reading.
+   */
+  tileGroups?: number;
 }
 
 /** Sibling values of a leaf, by field label, for meanings that depend on another field (an action's type). */

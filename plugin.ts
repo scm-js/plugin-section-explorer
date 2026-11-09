@@ -217,7 +217,7 @@ class Explorer {
 
   private ctx(): Ctx {
     const info = this.api.document.info();
-    return { names: this.api.names, width: info?.width ?? 0, height: info?.height ?? 0, encoding: this.api.settings.version()?.textEncoding };
+    return { names: this.api.names, width: info?.width ?? 0, height: info?.height ?? 0, encoding: this.api.settings.version()?.textEncoding, tileGroups: this.api.tileset.raw()?.tileset.groups.length };
   }
 
   private layout(): Node | null {

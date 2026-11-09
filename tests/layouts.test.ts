@@ -31,9 +31,9 @@ function unitBytes(unitId: number, owner: number, x: number, y: number): number[
   return [...le32(1), ...le16(x), ...le16(y), ...le16(unitId), ...le16(0), ...le16(0x1f), ...le16(0x7f), owner, 100, 100, 100, ...le32(0), ...le16(0), ...le16(0), ...le32(0), ...le32(0)];
 }
 
-const leafText = (root: Node, bytes: Uint8Array, at: number) => {
+const leafText = (root: Node, bytes: Uint8Array, at: number, within: Ctx = ctx) => {
   const hit = leafAt(root, at)!;
-  return describeLeaf(hit.leaf, bytes, ctx, siblingsOf(hit.path, bytes));
+  return describeLeaf(hit.leaf, bytes, within, siblingsOf(hit.path, bytes));
 };
 
 describe("record layouts", () => {
@@ -249,6 +249,16 @@ describe("sectionLayout", () => {
     // Bit 15 of a tile number takes no part in the group.
     const tile = new Uint8Array([...le16(0x8023), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     expect(leafText(sectionLayout("MTXM", tile, ctx)!, tile, 0).meaning).toBe("group 2, tile 3 — Dirt (bit 15 set: no effect in play)");
+    // So it is on a tileset of the game's size, 2,048 groups or fewer.
+    expect(leafText(sectionLayout("MTXM", tile, { ...ctx, tileGroups: 2048 })!, tile, 0, { ...ctx, tileGroups: 2048 }).meaning).toBe("group 2, tile 3 — Dirt (bit 15 set: no effect in play)");
+    // A mod's extended tileset (Cosmonarchy's Badlands has 4,094 groups) reads twelve bits: 0x8023 is group 2,050.
+    const wide = { ...ctx, tileGroups: 4094, names: { ...names, tile: (id: number) => (id >> 4 === 2050 ? "Mod Ground" : null) } };
+    expect(leafText(sectionLayout("MTXM", tile, wide)!, tile, 0, wide).meaning).toBe("group 2050, tile 3 — Mod Ground (bit 15 is part of the group: the tileset has 4,094 groups)");
+    const top = new Uint8Array([...le16(0xfffa), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    expect(leafText(sectionLayout("TILE", top, wide)!, top, 0, wide).meaning).toBe("group 4095, tile 10 (bit 15 is part of the group: the tileset has 4,094 groups)");
+    // A tile below 0x8000 reads the same either way, and needs no note.
+    const low = new Uint8Array([...le16(0x0023), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    expect(leafText(sectionLayout("MTXM", low, wide)!, low, 0, wide).meaning).toBe("group 2, tile 3");
     expect(sectionLayout("ZZZZ", new Uint8Array(3), ctx)).toBeNull();
     // A section shorter than its layout keeps the layout; the reader answers 0 past the end.
     const short = sectionLayout("DIM ", new Uint8Array([4, 0]), ctx)!;
